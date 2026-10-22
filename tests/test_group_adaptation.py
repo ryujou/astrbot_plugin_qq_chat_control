@@ -182,13 +182,60 @@ class AdaptationTests(unittest.IsolatedAsyncioTestCase):
         # The only emitted text is the existing quota reset notice.
         self.assertEqual(event.send.await_count, 1)
 
-    async def test_same_persona_different_group_has_no_access_to_image(self):
+    async def test_learning_groups_share_images_across_personas_and_keep_reply_scope(self):
         sticker, _ = self.image()
+        self.rules['qq_private', '10003']['persona_id'] = '另一个人设'
+        self.judge.text_chat.return_value = LLMResponse(role='assistant',
+            completion_text=json.dumps({'items': [{'id': sticker, 'confidence': .95}]}))
+        found = await self.stickers.candidates('qq_private', '10003', '绷不住了')
+        self.assertEqual([r['id'] for r in found], [sticker])
+        payload = json.loads(self.judge.text_chat.await_args.kwargs['prompt'])
+        self.assertNotIn('context', payload['candidates'][0])
+        self.assertNotIn('group_id', payload['candidates'][0])
         other = self.event(group='10003')
+        self.assertTrue(await self.choose(other, self.action('sticker', sticker)))
+        other.send.assert_awaited_once()
+        self.assertEqual(tuple(self.learning.db.execute('SELECT group_id,persona FROM replies').fetchone()),
+                         ('10003', '另一个人设'))
+
+    async def test_inactive_sources_and_destinations_do_not_share_images(self):
+        sticker, _ = self.image()
+        original = self.rules['qq_private', '10006'].copy()
+        for change in [dict(sticker_learning=False), dict(feedback_observe=False),
+                       dict(feedback_adapt_mode='关闭'), dict(persona_id='工作群'), dict(persona_id='更换后人设')]:
+            with self.subTest(change=change):
+                self.rules['qq_private', '10006'] = dict(original, **change)
+                self.assertEqual(await self.stickers.candidates('qq_private', '10003', '绷不住了'), [])
+                with self.assertRaises(ValueError):
+                    self.stickers.get('qq_private', '10003', sticker)
+        self.rules['qq_private', '10006'] = original
+        self.owner.config['allowed_group_ids'] = ['10003']
         self.assertEqual(await self.stickers.candidates('qq_private', '10003', '绷不住了'), [])
+        self.owner.config['allowed_group_ids'] = ['10003', '10006']
+        self.rules['qq_private', '10003']['sticker_learning'] = False
+        other = self.event(group='10003')
         with self.assertRaises(ValueError):
             await self.stickers.send(other, sticker)
         other.send.assert_not_awaited()
+        self.judge.text_chat.assert_not_awaited()
+
+    async def test_shared_caption_updates_image_reward_but_only_destination_policy(self):
+        sticker, path = self.image()
+        other = self.event(group='10003')
+        await self.choose(other, self.action('caption', sticker))
+        kwargs = self.policy.inject(other, {'prompt': '绷不住了', 'system_prompt': '人设'})
+        self.assertEqual(kwargs['image_urls'], [str(path)])
+        await self.policy.deliver(other)
+        other.send.assert_awaited_once()
+        reply_id = other.get_extra('qq_feedback_reply')
+        with self.learning.db:
+            self.learning.db.execute("UPDATE replies SET status='settled',score=.5,outcome='feedback',summary='{}' WHERE id=?",
+                                     (reply_id,))
+        self.policy.learn(('qq_private', '10003'))
+        row = self.learning.db.execute('SELECT uses,reward_sum,reward_n FROM stickers WHERE id=?', (sticker,)).fetchone()
+        self.assertEqual(tuple(row), (1, .25, 1))
+        self.assertEqual(self.policy.state(('qq_private', '10006'))['arms'], {})
+        self.assertEqual(self.policy.state(('qq_private', '10003'))['arms']['顺势接梗:caption']['n'], 1)
 
     async def test_incoming_image_uses_are_deduplicated_and_separated_by_group(self):
         sticker, _ = self.image()
@@ -554,7 +601,10 @@ class AdaptationTests(unittest.IsolatedAsyncioTestCase):
         self.policy.learn(('qq_private', '10006'))
         first, path_a = self.image()
         second, path_b = self.image(group='10003')
+        with self.learning.db:
+            self.learning.db.execute("UPDATE reply_actions SET action=json_set(action,'$.sticker_id',?) WHERE group_id='10003'", (first,))
         self.learning.clear_group('qq_private', '10006')
+        self.assertIsNone(self.learning.db.execute("SELECT json_extract(action,'$.sticker_id') FROM reply_actions WHERE group_id='10003'").fetchone()[0])
         self.assertFalse(path_a.exists())
         self.assertTrue(path_b.exists())
         self.assertEqual(self.learning.db.execute('SELECT COUNT(*) FROM reply_actions WHERE group_id=\'10003\'').fetchone()[0], 1)

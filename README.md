@@ -6,7 +6,7 @@
 
 AstrBot 完整插件 · 回复反馈 · 群内黑话 · 表情包 · 权限与人设
 
-[![Version](https://img.shields.io/badge/version-1.11.2-4f46e5?style=flat-square)](metadata.yaml)
+[![Version](https://img.shields.io/badge/version-1.11.3-4f46e5?style=flat-square)](metadata.yaml)
 [![AstrBot](https://img.shields.io/badge/AstrBot-%E2%89%A54.28%20%3C5-2563eb?style=flat-square)](https://github.com/AstrBotDevs/AstrBot)
 [![Platform](https://img.shields.io/badge/platform-QQ%20%2F%20OneBot-0891b2?style=flat-square)](#运行环境)
 [![License](https://img.shields.io/badge/license-MIT-16a34a?style=flat-square)](LICENSE)
@@ -32,7 +32,7 @@ AstrBot 完整插件 · 回复反馈 · 群内黑话 · 表情包 · 权限与�
 | 表达策略 | LinUCB 按当前语境选择接梗、短吐槽、自嘲、人设反话、认真接话及回复形式 |
 | 自动经验整理 | 从多条真实案例提炼有适用范围的经验；遇到反例暂停使用，再自动复核 |
 | 群内黑话 | 保留同词多义，通过多轮、多人、原始消息证据确认用法，仅注入相关语境 |
-| 表情包 | 收集本群合适图片，语义检索后再由模型筛选；支持文字、纯图片、文字配图，保留 GIF |
+| 表情包 | 学习群共用表情包池，语义检索后按当前群语境筛选；支持文字、纯图片、文字配图，保留 GIF |
 | 对照评估 | 交替运行原策略与学习策略，比较新增接话、纠错、反感、重复及延迟 |
 | 学习看板 | 查看各群资料、回复评分和依据、暂停经验、调用用量、词库与图库 |
 | QQ 聊天控制 | 按群设置模型、人设、插话、冷场发言、短期记忆及成员调用额度 |
@@ -48,7 +48,7 @@ flowchart TD
     A[获准参与的群聊] --> B[权限、额度、唤醒或自动搭话检查]
     B --> C{本轮策略}
     C -->|原策略时段| D[按基础人设回复]
-    C -->|学习策略时段| E[判断场景并检索本群经验与表情包]
+    C -->|学习策略时段| E[判断场景并检索本群经验与共享表情包]
     E --> F[LinUCB 选择表达方式与回复形式]
     F --> G[生成回复并实际发送]
     D --> G
@@ -95,7 +95,7 @@ LinUCB 的行动是“表达风格 × 回复形式”。同一行动下有多张
 
 经验整理需要至少 **8 个新结算样本**，两次整理至少间隔 **15 分钟**。一条经验需要引用至少两条真实案例；仅有“没有接话”不能支持新经验。被实际采用的经验遇到反例后暂停注入，后续整理必须考虑反例才能恢复或改写。
 
-黑话与表情包使用各自的证据流程：黑话需至少两轮、三条证据、两位成员及足够置信度才能确认；图片需通过内容识别、向量检索和当前语境筛选。相似度只用于排序，将本群最相关的至多五张交给判断模型，适用置信度至少 0.85 才可入选；模型认为没有合适图片时仍用文字。普通照片、工作截图、文档和二维码不作为可学习表情包。
+黑话与表情包使用各自的证据流程：黑话需至少两轮、三条证据、两位成员及足够置信度才能确认；图片需通过内容识别、向量检索和当前语境筛选。相似度只用于排序，将共享池最相关的至多五张交给判断模型，适用置信度至少 0.85 才可入选；模型认为没有合适图片时仍用文字。普通照片、工作截图、文档和二维码不作为可学习表情包。
 
 ### 4. 检查结果，而不是只看一个分数
 
@@ -188,7 +188,7 @@ python -m pip install -r data/plugins/astrbot_plugin_qq_chat_control/requirement
 
 Provider 缺失或条件不满足时，后台记录复核失败，不自动换成其他模型，不把未知部分当作有效训练反馈。没有兼容 Provider 时，可先使用常规模型观察；完整复核闭环需要把这个依赖接好。
 
-表情包需要把全局 `learning_embedding_provider_id` 填为一个已启用的原生向量模型 ID，同时为群选择支持图片输入的判断模型，并开启反馈观察、自适应策略和 `sticker_learning`。只上传图片不会直接使它成为可推荐表情包。
+表情包需要把全局 `learning_embedding_provider_id` 填为一个已启用的原生向量模型 ID，同时为群选择支持图片输入的判断模型，并开启反馈观察、自适应策略和 `sticker_learning`。所有同时开启学习策略和表情包功能的群共用图库，现有合格图片立即参与共享；停用群及其归档图片不参与。每次仍按当前群语境选图。只上传图片不会直接使它成为可推荐表情包。
 
 ### 5. 查看学习是否运行
 
@@ -202,7 +202,7 @@ Provider 缺失或条件不满足时，后台记录复核失败，不自动换�
 | --- | --- |
 | 群画像 | 当前模式、动态经验、暂停状态、策略样本、对照结果与模型调用 |
 | 回复评分 | 实际回复、互动分、结算状态、原始上下文、引用与判断依据 |
-| 表情包 | 原图与 GIF、描述、适用语境、状态和使用情况 |
+| 表情包 | 共享原图与 GIF、描述、适用语境、状态和图片使用汇总 |
 | 梗与黑话 | 同词多义、证据、确认状态与适用话题 |
 | 成员画像 | 本群成员的画像、好感和更新时间 |
 
@@ -237,7 +237,7 @@ Provider 缺失或条件不满足时，后台记录复核失败，不自动换�
 ```text
 data/plugin_data/astrbot_plugin_qq_chat_control/
 ├── learning.db          # 回复、反馈、词义、策略、图片索引、调用记录
-├── stickers/            # 按群存放的表情包文件
+├── stickers/            # 按来源群存放，启用学习的群共享使用
 ├── members.json         # 成员画像与好感
 ├── personas.json        # 群人设绑定
 ├── short_memory.json    # 短期记忆状态
@@ -246,7 +246,7 @@ data/plugin_data/astrbot_plugin_qq_chat_control/
 
 这些运行数据可能包含 QQ 号、群号、消息 ID、原文证据、图片和画像，**不应直接上传到公开仓库**。`.gitignore` 已排除常见数据目录、数据库、日志、凭据文件及本地配置；自行导出的文件仍需要自行检查。关闭学习开关会停止对应功能，不等于删除此前保存的资料。
 
-本地存储也不等于聊天内容只在本机处理：配置的聊天、判断、复核、图片理解和向量 Provider 会接收相应上下文或图片，请按实际使用的服务设置参与群范围。后台判断不开放执行工具；不同群的词库、图库和策略分别保存。
+本地存储也不等于聊天内容只在本机处理：配置的聊天、判断、复核、图片理解和向量 Provider 会接收相应上下文或图片，请按实际使用的服务设置参与群范围。后台判断不开放执行工具；各群聊天原文、反馈、词库、成员画像和策略分别保存；开启学习与表情包功能的群共享图片、描述和图片使用/奖励汇总，选图不传入来源群的聊天原文。图片按来源群保留，清理来源群资料时对应图片退出共享池。
 
 调用记录保留 30 天；评估展示最近 14 天。未被反馈或观察窗口引用的普通消息会清理，但已关联的反馈证据、回复和学习资料不会因此全部删除。删除成员画像只作用于画像记录，不会自动擦除其他表中的消息证据。
 
@@ -268,7 +268,7 @@ python -m pip install -r requirements.txt
 python tests/run.py
 ```
 
-当前包含 **130 项自动化用例**，覆盖引用归因、未知与失败结算、不确定反馈复核、负面证据、反例经验、群隔离、黑话、GIF、选图概率、对照配对、调用用量、页面 API、成员好感及时更新与原话校验等。测试使用临时数据和模拟 Provider，不需要真实 QQ 账号，也不会向群发送测试消息。
+当前包含 **133 项自动化用例**，覆盖引用归因、未知与失败结算、不确定反馈复核、负面证据、反例经验、群隔离、黑话、GIF、选图概率、对照配对、调用用量、页面 API、成员好感及时更新与原话校验等。测试使用临时数据和模拟 Provider，不需要真实 QQ 账号，也不会向群发送测试消息。
 
 源码职责：`learning.py` 记录与结算反馈，`strategy.py` 选择行动与整理经验，`evaluation.py` 统计对照，`slang.py` / `stickers.py` 处理词义与图片，`web.py` 和 `pages/learning/` 提供看板；`main.py` 连接权限、会话与 AstrBot 生命周期。
 
@@ -280,7 +280,7 @@ python tests/run.py
 | --- | --- |
 | [Naturally Occurring Feedback is Common, Extractable and Useful](https://arxiv.org/abs/2407.10944) · [实现](https://github.com/shachardon/naturally_occurring_feedback) | 从正常对话中提取自然反馈；本项目进一步绑定 QQ 回执与引用，在线更新策略，不进行论文式模型权重训练 |
 | [A Contextual-Bandit Approach to Personalized News Article Recommendation](https://arxiv.org/abs/1003.0146) | LinUCB 方法来源；本项目将行动换成表达风格与回复形式，并记录探索概率 |
-| [StickerConv: Generating Multimodal Empathetic Responses from Scratch](https://aclanthology.org/2024.acl-long.417/) · [实现](https://github.com/ZhangYiqun018/StickerConv) | 参考表情包理解、检索与对话融合；本项目使用本群图库与真实群友反应，不把生成数据或模型自评当作真实奖励 |
+| [StickerConv: Generating Multimodal Empathetic Responses from Scratch](https://aclanthology.org/2024.acl-long.417/) · [实现](https://github.com/ZhangYiqun018/StickerConv) | 参考表情包理解、检索与对话融合；本项目使用学习群共享图库与真实群友反应，不把生成数据或模型自评当作真实奖励 |
 | [AstrBot 插件开发](https://docs.astrbot.app/dev/star/plugin-new.html) · [插件页面](https://docs.astrbot.app/dev/star/guides/plugin-pages.html) | 宿主插件和后台页面接口 |
 
 ## 许可证

@@ -24,7 +24,7 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.rules = {('qq_private', group): dict(persona_id='同人设', feedback_observe=True) for group in ['a', 'b']}
-        self.owner = NS(rules=self.rules, config={'allowed_group_ids':['a','b']},
+        self.owner = NS(closing=False, rules=self.rules, config={'allowed_group_ids':['a','b']},
                         profiles=NS(records={}), context=NS(platform_manager=NS(platform_insts=[])))
         self.owner.learning = FeedbackLearning(self.owner, Path(self.tmp.name)/'learning.db')
         self.db = self.owner.learning.open()
@@ -82,6 +82,33 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.db.execute('UPDATE stickers SET path=?',(str(Path(self.tmp.name)/'outside.gif'),))
         self.db.commit()
         with self.assertRaises(ValueError):await self.get('image','group_id=a&platform=qq_private&id=1')
+
+
+    async def test_shared_gallery_preview_and_totals_follow_active_sources(self):
+        for rule in self.rules.values():
+            rule.update(feedback_adapt_mode='学习', sticker_learning=True)
+        root = self.owner.learning.policy.stickers.root / 'qq_private' / 'a'
+        root.mkdir(parents=True)
+        path = root / 'shared.gif'
+        content = b'GIF89a-shared-test'
+        path.write_bytes(content)
+        with self.db:
+            self.db.execute("INSERT INTO stickers(id,platform,group_id,persona,status,path) VALUES (1,'qq_private','a','同人设','ready',?)", (str(path),))
+        query = 'group_id=b&platform=qq_private'
+        result = await self.get('stickers', query)
+        self.assertEqual([r['id'] for r in result['items']], [1])
+        overview = await self.get('overview', query)
+        self.assertEqual(overview['images'], {'ready': 1})
+        image = await self.get('image', query + '&id=1')
+        self.assertEqual(base64.b64decode(image['src'].split(',')[1]), content)
+        replies = await self.get('replies', query)
+        self.assertEqual([r['body'] for r in replies['items']], ['乙群独立原话'])
+        self.rules['qq_private', 'a']['sticker_learning'] = False
+        self.assertEqual((await self.get('stickers', query))['total'], 0)
+        with self.assertRaises(ValueError):
+            await self.get('image', query + '&id=1')
+        archived = await self.get('image', 'group_id=a&platform=qq_private&id=1')
+        self.assertEqual(base64.b64decode(archived['src'].split(',')[1]), content)
 
 
 class ToolsTests(unittest.IsolatedAsyncioTestCase):

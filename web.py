@@ -100,8 +100,9 @@ class LearningWeb:
         replies = dict(self.db.execute('SELECT COUNT(*) total,SUM(status=\'settled\') settled,'
             'SUM(status=\'observing\') observing,AVG(score) mean_score FROM replies '
             'WHERE platform=? AND group_id=? AND persona=?', scope).fetchone())
-        images = dict(self.db.execute('SELECT status,COUNT(*) FROM stickers WHERE platform=? AND group_id=? '
-                                     'AND persona=? GROUP BY status', scope).fetchall())
+        query, values = self.owner.learning.policy.stickers.scope_query(*scope[:2])
+        images = dict(self.db.execute('SELECT status,COUNT(*) FROM stickers WHERE '
+                                     + query + ' GROUP BY status', values).fetchall())
         members, terms = self.members_for(scope), self.terms_for(scope)
         state = self.owner.learning.policy.state(scope[:2])
         actions = self.db.execute('SELECT COUNT(*),SUM(updated) FROM reply_actions WHERE platform=? '
@@ -169,7 +170,7 @@ class LearningWeb:
     async def stickers(self):
         scope = self.scope()
         page, size, offset = self.page()
-        query, values = 'platform=? AND group_id=? AND persona=?', list(scope)
+        query, values = self.owner.learning.policy.stickers.scope_query(*scope[:2])
         status, search = request.args.get('status', ''), request.args.get('q', '').strip()
         if status:
             if status not in {'ready', 'pending', 'rejected', 'failed'}:
@@ -189,14 +190,15 @@ class LearningWeb:
 
     async def image(self):
         scope = self.scope()
-        row = self.db.execute("SELECT path FROM stickers WHERE platform=? AND group_id=? AND persona=? AND id=? AND status='ready'",
-                              (*scope, int(request.args.get('id', '0')))).fetchone()
+        query, values = self.owner.learning.policy.stickers.scope_query(*scope[:2])
+        row = self.db.execute("SELECT path,platform,group_id FROM stickers WHERE " + query + " AND id=? AND status='ready'",
+                              (*values, int(request.args.get('id', '0')))).fetchone()
         if row is None:
-            raise ValueError('本群没有这张可用表情包')
-        root = (self.owner.learning.policy.stickers.root / scope[0] / scope[1]).resolve()
+            raise ValueError('当前表情包池没有这张可用图片')
+        root = (self.owner.learning.policy.stickers.root / row['platform'] / row['group_id']).resolve()
         path = Path(row['path']).resolve()
         if not path.is_relative_to(root):
-            raise ValueError('图片不属于本群图库')
+            raise ValueError('图片不属于记录的来源图库')
         mime = mimetypes.guess_type(path.name)[0]
         return dict(src='data:' + mime + ';base64,' + base64.b64encode(path.read_bytes()).decode('ascii'))
 

@@ -1,7 +1,7 @@
 name: astrbot_plugin_qq_chat_control
 display_name: QQ 聊天控制
 desc: QQ 权限、群模型与人设、回复反馈自适应、群内黑话与表情包学习
-version: 1.11.2
+version: 1.11.3
 author: Ryujou
 repo: https://github.com/ryujou/astrbot_plugin_qq_chat_control
 astrbot_version: ">=4.28,<5"
