@@ -6,7 +6,7 @@
 
 AstrBot 完整插件 · 回复反馈 · 群内黑话 · 表情包 · 权限与人设
 
-[![Version](https://img.shields.io/badge/version-1.11.3-4f46e5?style=flat-square)](metadata.yaml)
+[![Version](https://img.shields.io/badge/version-1.11.4-4f46e5?style=flat-square)](metadata.yaml)
 [![AstrBot](https://img.shields.io/badge/AstrBot-%E2%89%A54.28%20%3C5-2563eb?style=flat-square)](https://github.com/AstrBotDevs/AstrBot)
 [![Platform](https://img.shields.io/badge/platform-QQ%20%2F%20OneBot-0891b2?style=flat-square)](#运行环境)
 [![License](https://img.shields.io/badge/license-MIT-16a34a?style=flat-square)](LICENSE)
@@ -122,6 +122,8 @@ LinUCB 的行动是“表达风格 × 回复形式”。同一行动下有多张
 | 页面 | AstrBot 自带插件页面，无需另开前端服务 |
 
 **本仓库包含完整 QQ 聊天控制插件；模型 Provider、Codex / Antigravity CLI、账号登录与切换扩展需要自行安装配置。** 普通聊天与学习可使用标准 AstrBot Provider；严格 Codex max 复核和部分工作集成还依赖兼容的 Provider 实现，仅把一个普通接口的名称改成 Codex 并不能满足要求。
+
+工作群的执行中转向需要 Provider 提供 `steer(origin, prompt, image_urls=...)` 接口：同一发起人再次 @ 机器人时，补充文字、图片或文件可送入当前任务，并进入会话历史；明确的“停止不查了”“取消任务”等短指令直接取消当前执行。限额聊天、自动搭话和其他成员不能借此操作该任务。Provider 不支持转向时，沿用 AstrBot 原生追加消息流程。
 
 代码使用 AstrBot 的消息、Provider 和插件页面接口，也涉及内部会话接口；声明的版本范围不表示每个版本都已实测。
 

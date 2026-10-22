@@ -24,6 +24,7 @@ from .learning import FeedbackLearning
 from .tools import bind_tools
 from .web import LearningWeb
 from .work_progress import WorkProgress, PROGRESS_INSTRUCTIONS
+from .follow_up import steer_task
 
 LLM_COMMAND_NAMES = {'new','reset','stop','stats','provider','set','unset','llm','model',
     'history','ls','groupnew','switch','rename','del','persona','gcp_reset','gcp_reset_here',
@@ -368,6 +369,10 @@ class QQChatControl(Star):
             event.stop_event()
             raise
         event.set_extra('selected_provider', provider_id)
+        if await steer_task(self, event, self.provider(provider_id)):
+            event.should_call_llm(True)
+            event.stop_event()
+            return
         persona = self.rule(event).get('persona_id', '')
         if persona and self.context.persona_manager.get_persona_v3_by_id(persona) is None:
             event.stop_event()

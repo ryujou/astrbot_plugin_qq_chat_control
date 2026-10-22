@@ -79,6 +79,9 @@ class WorkProgress:
             self.stage = '正在连接执行引擎'
         elif kind == 'running':
             self.stage = '模型已开始处理任务'
+        elif kind == 'steered':
+            self.stage = '已收到补充指令，正在调整当前任务'
+            self.commentary = ''
         elif kind == 'reconnecting':
             self.stage = '连接中断，正在重新连接'
         elif kind == 'commentary' and self.mode == '详细':
