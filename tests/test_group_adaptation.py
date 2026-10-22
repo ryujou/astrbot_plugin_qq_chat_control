@@ -241,6 +241,20 @@ class AdaptationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([r['id'] for r in found], [sticker])
         self.assertFalse(self.judge.chat_only_context.get())
 
+    async def test_semantic_similarity_ranks_candidates_but_judge_decides_suitability(self):
+        sticker, _ = self.image()
+        with self.learning.db:
+            self.learning.db.execute('UPDATE stickers SET embedding=? WHERE id=?',
+                (json.dumps([.44, float(np.sqrt(1 - .44 ** 2))]), sticker))
+        self.judge.text_chat.return_value = LLMResponse(role='assistant',
+            completion_text=json.dumps({'items': [{'id': sticker, 'confidence': .95}]}))
+        found = await self.stickers.candidates('qq_private', '10006', '没看懂')
+        self.assertEqual([r['id'] for r in found], [sticker])
+        payload = json.loads(self.judge.text_chat.await_args.kwargs['prompt'])
+        self.assertAlmostEqual(payload['candidates'][0]['similarity'], .44)
+        self.judge.text_chat.return_value = LLMResponse(role='assistant', completion_text='{"items":[]}')
+        self.assertEqual(await self.stickers.candidates('qq_private', '10006', '没看懂'), [])
+
     async def test_gif_description_uses_frames_and_preserves_original_animation(self):
         sticker, source = self.image(status='pending')
         original = source.read_bytes()

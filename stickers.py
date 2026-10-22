@@ -181,8 +181,6 @@ class GroupStickers:
                 continue
             vector = np.asarray(json.loads(row['embedding']), dtype=float)
             similarity = float(vector @ query / max(1e-9, np.linalg.norm(vector) * np.linalg.norm(query)))
-            if similarity < .45:
-                continue
             reward = row['reward_sum'] / max(1, row['reward_n'])
             repeat_cost = .2 if time.time() - row['last_used'] < 600 else 0
             ranked.append((similarity + .1 * reward - repeat_cost, dict(id=row['id'], description=row['description'],
