@@ -321,7 +321,7 @@ class FeedbackLearning:
             fixed, depth = self.quote_target(platform, group, item, replies)
             candidates = [reply['id'] for reply in replies.values()
                           if reply['sent'] <= item['ts'] <= reply['sent'] + 120]
-            if fixed is None and (not candidates or len(item['text'].strip()) < 4):
+            if fixed is None and (not candidates or not item['text'].strip()):
                 ignored.append(item['message_id'])
                 continue
             items.append(dict(message_id=item['message_id'], sender=item['sender'], text=item['text'],
@@ -501,8 +501,6 @@ class FeedbackLearning:
                             '(SELECT id FROM replies WHERE sent IS NULL AND created<?)', (time.time() - 1200,))
             self.db.execute('DELETE FROM replies WHERE sent IS NULL AND created<?', (time.time() - 1200,))
         for platform, group in list(self.owner.rules):
-            await self.policy.stickers.tick(platform, group)
-        for platform, group in list(self.owner.rules):
             if self.scope_enabled(platform, group):
                 batch = self.batch(platform, group)
                 if batch:
@@ -513,6 +511,8 @@ class FeedbackLearning:
         for platform, group in list(self.owner.rules):
             if self.slang.enabled_scope(platform, group):
                 await self.slang.update_due(platform, group)
+        for platform, group in list(self.owner.rules):
+            await self.policy.stickers.tick(platform, group)
         with self.db:
             self.db.execute('DELETE FROM model_calls WHERE created<?', (time.time() - 30 * 86400,))
             self.db.execute('DELETE FROM messages WHERE ts<? AND NOT EXISTS '

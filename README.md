@@ -6,7 +6,7 @@
 
 AstrBot 完整插件 · 回复反馈 · 群内黑话 · 表情包 · 权限与人设
 
-[![Version](https://img.shields.io/badge/version-1.11.4-4f46e5?style=flat-square)](metadata.yaml)
+[![Version](https://img.shields.io/badge/version-1.12.0-4f46e5?style=flat-square)](metadata.yaml)
 [![AstrBot](https://img.shields.io/badge/AstrBot-%E2%89%A54.28%20%3C5-2563eb?style=flat-square)](https://github.com/AstrBotDevs/AstrBot)
 [![Platform](https://img.shields.io/badge/platform-QQ%20%2F%20OneBot-0891b2?style=flat-square)](#运行环境)
 [![License](https://img.shields.io/badge/license-MIT-16a34a?style=flat-square)](LICENSE)
@@ -288,3 +288,5 @@ python tests/run.py
 ## 许可证
 
 [MIT](LICENSE)。
+
+场景、主动接话时机与候选图片适用性在同一次模型判断中完成；明确 @ 保持正常回答。自动插话在只能重复、话题结束或判断等待超过两分钟时可取消，不把未发送内容计作反馈样本。短回应也按上下文判断归属，未知不强行计分。待分析成员互动在重载后继续处理，无需成员重新发言；新图片理解在实时回复期间让行，已有图片仍可正常检索。

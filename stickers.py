@@ -174,6 +174,8 @@ class GroupStickers:
                           "AND (status='pending' OR (status='ready' AND seen>=described_seen+5)) "
                           'ORDER BY created LIMIT 2', (platform, group, persona)).fetchall()
         for row in rows:
+            if any(not task.done() for task in getattr(self.owner.limits, 'tasks', ())):
+                return
             try:
                 await self.describe(dict(row))
             except Exception:
@@ -184,7 +186,7 @@ class GroupStickers:
                     else:
                         db.execute("UPDATE stickers SET status='failed',url='' WHERE id=?", (row['id'],))
 
-    async def candidates(self, platform, group, text):
+    async def ranked_pool(self, platform, group, text):
         if not self.enabled(platform, group):
             return []
         provider_id, provider = self.embedding_provider()
@@ -205,10 +207,17 @@ class GroupStickers:
             ranked.append((similarity + .1 * reward - repeat_cost, dict(id=row['id'], description=row['description'],
                            visible_text=row['visible_text'], scene=row['scene'], tags=json.loads(row['tags']), similarity=similarity)))
         ranked.sort(key=lambda pair: pair[0], reverse=True)
-        pool = [r for _, r in ranked[:5]]
+        return [r for _, r in ranked[:5]]
+
+    async def candidates(self, platform, group, text):
+        pool = await self.ranked_pool(platform, group, text)
         if not pool:
             return []
         data = parse_json(await self.policy.judge((platform, group), CHOOSE, {'message': text, 'candidates': pool}, purpose='sticker_choose'))
+        return self.accepted(pool, data)
+
+    @staticmethod
+    def accepted(pool, data):
         selected = data.get('items') if isinstance(data, dict) else None
         if not isinstance(selected, list) or len(selected) > 2:
             raise ValueError('表情包语境筛选格式错误')

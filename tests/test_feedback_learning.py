@@ -271,12 +271,14 @@ class FeedbackTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(rows[0]['reply_id'], target)
         self.assertEqual(rows[0]['weight'], .3)
 
-    async def test_short_unquoted_late_semantic_and_cross_group_quote_not_counted(self):
+    async def test_short_reply_is_judged_but_late_and_cross_group_are_excluded(self):
         event = self.exposure()
         for i, text, ts in [('1', '笑死', 1010), ('2', '这首歌的副歌确实好听', 1130)]:
             self.learning.observe(Event(i, sender='bob', text=text, ts=ts))
         self.learning.observe(Event('3', sender='bob', parent='sent', group='10003', ts=1010))
-        self.assertIsNone(self.learning.batch('qq_private', '10006'))
+        batch = self.learning.batch('qq_private', '10006')
+        self.assertEqual([i['message_id'] for i in batch['items']], ['1'])
+        self.judge(batch, intent='neutral')
         self.learning.settle(now=1601)
         self.assertIsNone(self.row(event.get_extra('qq_feedback_reply'))['score'])
 
@@ -294,7 +296,7 @@ class FeedbackTests(unittest.IsolatedAsyncioTestCase):
         second = self.exposure('trigger2', 'sent2', ts=2000)
         for i in range(5):
             self.learning.observe(Event(str(i), sender='bob' if i % 2 else 'charlie', text='无关', ts=2010 + i))
-        self.learning.batch('qq_private', '10006')
+        self.judge(self.learning.batch('qq_private', '10006'), intent='neutral')
         self.learning.settle(now=2601)
         row = self.row(second.get_extra('qq_feedback_reply'))
         self.assertEqual(row['outcome'], 'active_no_response')

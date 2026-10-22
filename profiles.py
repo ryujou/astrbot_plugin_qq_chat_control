@@ -184,7 +184,11 @@ class MemberProfiles:
             not any(s.get('direct') or s.get('reply') for s in item[1]['samples']), item[1]['last_update']))
         for key, record in records:
             event = self.events.get(key)
-            if event is None or not self.enabled(event):
+            platform, group, _ = key.split(':', 2)
+            scope = platform, group
+            enabled = lambda: (group in self.owner.config.get('allowed_group_ids', [])
+                               and self.owner.rules.get(scope, {}).get('member_profiles', False))
+            if not enabled() or event is not None and not self.enabled(event):
                 continue
             interaction = any(s.get('direct') or s.get('reply') for s in record['samples'])
             if (now - record['last_update'] < (60 if interaction else 3600)
@@ -195,26 +199,30 @@ class MemberProfiles:
             self.save()
             token = current_message.set(None)
             try:
-                analysis_event = copy(event)
-                analysis_event._extras = {'qq_chat_automatic': True}
                 payload = {'原画像': record['profile'], '当前好感': record['affinity'], 'samples': batch}
-                request = analysis_event.request_llm(prompt=json.dumps(payload, ensure_ascii=False), conversation=None)
-                await self.owner.bind_request(analysis_event, request)
-                result = await self.owner.provider(self.owner.provider_id(event)).text_chat(
-                    prompt=request.prompt, contexts=[], system_prompt=PROFILE_PROMPT)
-                if not self.owner.limits.successful(result):
-                    raise ValueError('成员画像分析未生成完整文字')
-                profile, delta, certain = profile_assessment(result.completion_text, batch)
+                if event is None:
+                    text = await self.owner.learning.policy.judge(scope, PROFILE_PROMPT, payload, purpose='member_profile')
+                else:
+                    analysis_event = copy(event)
+                    analysis_event._extras = {'qq_chat_automatic': True}
+                    request = analysis_event.request_llm(prompt=json.dumps(payload, ensure_ascii=False), conversation=None)
+                    await self.owner.bind_request(analysis_event, request)
+                    result = await self.owner.provider(self.owner.provider_id(event)).text_chat(
+                        prompt=request.prompt, contexts=[], system_prompt=PROFILE_PROMPT)
+                    if not self.owner.limits.successful(result):
+                        raise ValueError('成员画像分析未生成完整文字')
+                    text = result.completion_text
+                profile, delta, certain = profile_assessment(text, batch)
                 if interaction and not certain:
                     try:
                         text = await self.owner.learning.policy.judge(
-                            (event.get_platform_id(), str(event.get_group_id())), PROFILE_PROMPT, payload,
+                            scope, PROFILE_PROMPT, payload,
                             recheck=True, purpose='member_profile')
                         _, delta, certain = profile_assessment(text, batch)
                     except Exception:
                         logger.exception('成员好感复核失败，保留原分：%s', key)
                         certain = False
-                if self.records.get(key) is record and self.enabled(event):
+                if self.records.get(key) is record and enabled():
                     record['profile'] = profile
                     if interaction and certain:
                         record['affinity'] = max(0, min(100, record['affinity'] + delta))

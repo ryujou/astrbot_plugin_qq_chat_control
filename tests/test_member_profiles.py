@@ -245,6 +245,32 @@ class MemberProfileTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(command.validate_and_convert_params(['更正', '叫我阿明', '喜欢游戏'], {'action': GreedyStr}),
             {'action': '更正 叫我阿明 喜欢游戏'})
 
+    async def test_pending_direct_interaction_survives_reload_without_new_message(self):
+        event = Event(text='你真是个蠢货')
+        event.parts.insert(0, control.At(qq='bot'))
+        self.controller.profiles.observe(event)
+        self.controller.profiles = control.MemberProfiles(self.controller, self.controller.profiles.path)
+        self.recheck.return_value = assessment(delta=-10, quote='你真是个蠢货')
+        await self.update()
+        record = self.controller.profiles.records[self.controller.profiles.key(event)]
+        self.assertEqual(record['affinity'], 40)
+        self.assertEqual(record['samples'], [])
+        self.assertEqual(self.recheck.call_args.kwargs, {'purpose': 'member_profile'})
+        self.chat.assert_not_awaited()
+        await self.update(now=10100)
+        self.recheck.assert_awaited_once()
+
+    async def test_reloaded_unknown_interaction_uses_codex_recheck(self):
+        event = Event(text='你真是个蠢货')
+        event.parts.insert(0, control.At(qq='bot'))
+        self.controller.profiles.observe(event)
+        self.controller.profiles.events.clear()
+        self.recheck.side_effect = [assessment(delta=0, confidence=.5, target='unknown'),
+                                   assessment(delta=-10, quote='你真是个蠢货')]
+        await self.update()
+        self.assertTrue(self.recheck.call_args.kwargs['recheck'])
+        self.assertEqual(self.controller.profiles.record(event)['affinity'], 40)
+
     async def test_bounded_samples_and_message_lengths(self):
         event = None
         for number in range(60):

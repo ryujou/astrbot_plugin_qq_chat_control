@@ -84,7 +84,7 @@ class AdaptationTests(unittest.IsolatedAsyncioTestCase):
         original_judge = self.policy.judge
         async def judge(scope, system, payload, *args, **kwargs):
             if system.startswith('判断本轮QQ群回复场景'):
-                return '{"scene":"casual","confidence":0.95,"wants_sticker":false}'
+                return json.dumps(dict(scene='casual', confidence=.95, wants_sticker=False, items=[dict(id=action['sticker_id'], confidence=.95)] if action.get('sticker_id') else []))
             return await original_judge(scope, system, payload, *args, **kwargs)
         with self.bound(event):
             self.learning.prepare(event)
@@ -151,7 +151,7 @@ class AdaptationTests(unittest.IsolatedAsyncioTestCase):
                 event=event.message_obj.raw_message, is_group=True, session_id=event.get_group_id())
         event.send.side_effect = native_send
         self.learning.install()
-        with patch.object(self.stickers, 'candidates', AsyncMock(return_value=[dict(id=sticker, description='猫猫捂脸')])):
+        with patch.object(self.stickers, 'ranked_pool', AsyncMock(return_value=[dict(id=sticker, description='猫猫捂脸')])):
             self.assertTrue(await self.choose(event, self.action('sticker', sticker)))
         api.call_action.assert_awaited_once()
         self.assertEqual(self.learning.db.execute('SELECT message_id FROM outgoing').fetchone()[0], '123')
@@ -434,6 +434,46 @@ class AdaptationTests(unittest.IsolatedAsyncioTestCase):
         self.learning.db.execute("UPDATE replies SET status='settled',score=1,outcome='feedback',summary='{}'")
         self.policy.learn(('qq_private', '10006'))
         self.assertEqual(self.policy.state(('qq_private', '10006'))['arms'], {})
+
+    async def test_scene_and_image_selection_share_one_model_call(self):
+        sticker, _ = self.image()
+        event = self.event()
+        self.judge.text_chat.return_value.completion_text = json.dumps(dict(
+            scene='casual', confidence=.98, wants_sticker=False, should_reply=True,
+            items=[dict(id=sticker, confidence=.96), dict(id=999999, confidence=.99)]))
+        with self.bound(event):
+            self.learning.prepare(event)
+            with patch.object(self.policy, 'select', return_value=(self.action(), [self.action()], 1.)) as select:
+                await self.policy.prepare(event, NS(conversation=None))
+        self.judge.text_chat.assert_awaited_once()
+        self.assertEqual([s['id'] for s in select.call_args.args[2]], [sticker])
+        self.assertIn('candidates', json.loads(self.judge.text_chat.call_args.kwargs['prompt']))
+
+    async def test_auto_can_stay_silent_but_explicit_request_is_not_suppressed(self):
+        for automatic in (True, False):
+            event = self.event()
+            event.set_extra('qq_chat_automatic', automatic)
+            with self.bound(event):
+                self.learning.prepare(event)
+                rid = event.get_extra('qq_feedback_reply')
+                with patch.object(self.policy, 'judge', AsyncMock(return_value=json.dumps(dict(
+                    scene='casual', confidence=.98, wants_sticker=False, should_reply=False, items=[])))):
+                    suppressed = await self.policy.prepare(event, NS(conversation=None))
+            self.assertEqual(suppressed, automatic)
+            exists = self.learning.db.execute('SELECT id FROM replies WHERE id=?', (rid,)).fetchone()
+            self.assertEqual(exists is None, automatic)
+            event.send.assert_not_awaited()
+
+    async def test_image_description_yields_to_active_reply(self):
+        self.image(status='pending')
+        running = Mock(done=lambda: False)
+        self.owner.limits.tasks.add(running)
+        try:
+            with patch.object(self.stickers, 'describe', AsyncMock()) as describe:
+                await self.stickers.tick('qq_private', '10006')
+                describe.assert_not_awaited()
+        finally:
+            self.owner.limits.tasks.discard(running)
 
     async def test_codex_recheck_requires_max_and_uses_chat_only_context(self):
         self.judge.provider_config = {'思考强度': 'max'}
