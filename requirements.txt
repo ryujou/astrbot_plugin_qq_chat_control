@@ -1,0 +1,5 @@
+aiocqhttp
+json-repair
+numpy
+Pillow
+quart

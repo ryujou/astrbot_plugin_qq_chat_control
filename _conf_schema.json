@@ -1,0 +1,260 @@
+{
+  "allowed_qq_ids": {
+    "description": "允许聊天的 QQ",
+    "type": "list",
+    "default": []
+  },
+  "allowed_group_ids": {
+    "description": "允许聊天的群",
+    "type": "list",
+    "default": []
+  },
+  "management_group_id": {
+    "description": "超管管理群",
+    "type": "string",
+    "default": ""
+  },
+  "member_limit_hours": {
+    "description": "成员聊天额度周期（小时）",
+    "type": "float",
+    "default": 5,
+    "hint": "非白名单成员从首次获准请求开始计时，到期整批恢复。"
+  },
+  "member_limit_count": {
+    "description": "成员每周期聊天次数",
+    "type": "int",
+    "default": 5,
+    "hint": "除自动插话外的LLM触发入口共用，每条消息成功后最多计一次；白名单成员和自动插话不计次。"
+  },
+  "default_provider_id": {
+    "description": "默认聊天模型",
+    "type": "string",
+    "default": "",
+    "_special": "select_provider"
+  },
+  "codex_provider_id": {
+    "description": "账号切换及工作群 Codex 模型",
+    "type": "string",
+    "default": "",
+    "_special": "select_provider",
+    "hint": "可选，用于已有 Codex 扩展集成；普通模型聊天可留空。"
+  },
+  "quiet_group_errors": {
+    "description": "群运行错误静默",
+    "type": "bool",
+    "default": true
+  },
+  "learning_embedding_provider_id": {
+    "description": "表情包语义检索向量模型",
+    "type": "string",
+    "default": "",
+    "hint": "使用已启用的原生Embedding模型ID，对表情包描述和本轮语境做语义检索。"
+  },
+  "history_turns": {
+    "description": "群聊最多保留对话轮数",
+    "type": "int",
+    "default": 10,
+    "hint": "包含本轮问答；按完整轮次截断，不生成长期摘要。仅群聊生效。"
+  },
+  "idle_hours": {
+    "description": "群聊空闲重置（小时）",
+    "type": "float",
+    "default": 2,
+    "hint": "成员会话超过此时间未请求聊天，下次请求前清空上下文，保留人设。"
+  },
+  "session_hours": {
+    "description": "群聊上下文最长延续（小时）",
+    "type": "float",
+    "default": 12,
+    "hint": "即使持续聊天，到期后下一次请求也从空上下文开始。"
+  },
+  "group_context_minutes": {
+    "description": "群消息参考时效（分钟）",
+    "type": "float",
+    "default": 30
+  },
+  "group_context_messages": {
+    "description": "最多参考群消息条数",
+    "type": "int",
+    "default": 30
+  },
+  "group_rules": {
+    "type": "template_list",
+    "description": "按群设置模型、人设、插话、冷场发言和成员画像",
+    "default": [],
+    "templates": {
+      "group": {
+        "name": "群聊天规则",
+        "items": {
+          "platform_id": {
+            "description": "平台实例 ID",
+            "type": "string",
+            "default": ""
+          },
+          "group_id": {
+            "description": "群号",
+            "type": "string",
+            "default": ""
+          },
+          "provider_id": {
+            "description": "聊天模型",
+            "type": "string",
+            "default": "",
+            "_special": "select_provider"
+          },
+          "persona_id": {
+            "description": "群人设",
+            "type": "string",
+            "default": "",
+            "_special": "select_persona",
+            "hint": "留空沿用原生设置；修改或解除绑定会永久删除该群所有成员的聊天记录。正文在原生人设管理维护。"
+          },
+          "auto_only": {
+            "description": "仅自动搭话",
+            "type": "bool",
+            "default": false
+          },
+          "member_limit_enabled": {
+            "description": "非白名单成员限额聊天",
+            "type": "bool",
+            "default": true,
+            "hint": "含主动唤醒和插件LLM调用；自动插话不计次。关闭后本群仅白名单成员可调用LLM。"
+          },
+          "auto_reply": {
+            "description": "自动插话",
+            "type": "bool",
+            "default": false
+          },
+          "message_count": {
+            "description": "累计消息条数",
+            "type": "int",
+            "default": 10
+          },
+          "reply_probability": {
+            "description": "触发概率（百分数）",
+            "type": "float",
+            "default": 30.0
+          },
+          "idle_reply": {
+            "description": "冷场主动发言",
+            "type": "bool",
+            "default": false,
+            "hint": "从收到群员消息开始计时，冷场后主动说一句；有人说话重新计时，发过一次后等待群员再次发言。不扣个人额度。"
+          },
+          "idle_reply_minutes": {
+            "description": "冷场等待分钟数",
+            "type": "int",
+            "default": 30,
+            "hint": "每分钟检查一次。沿用本群模型、人设和聊天权限；重载后从下一条群员消息开始计时。"
+          },
+          "work_progress_mode": {
+            "description": "工作过程反馈",
+            "type": "string",
+            "options": [
+              "关闭",
+              "状态",
+              "详细"
+            ],
+            "default": "关闭",
+            "hint": "支持本群获准使用完整工具的Codex和Antigravity请求。反馈接单、连接、当前步骤、定时等待及结束状态；Codex详细模式另含公开过程说明，Antigravity反馈真实原生工具步骤。自动插话和限额纯聊天不输出，不转发内部思考或命令日志。"
+          },
+          "work_progress_interval_seconds": {
+            "description": "工作过程反馈间隔（秒）",
+            "type": "int",
+            "default": 30,
+            "hint": "至少10秒。执行期间按此间隔合并反馈，接单与结束状态不受此间隔限制。长时间没有新的执行事件时如实提示等待返回，不声称仍有新进展。"
+          },
+          "member_profiles": {
+            "description": "成员画像和好感",
+            "type": "bool",
+            "default": false,
+            "hint": "按平台、群和QQ独立保存，每20条有效文字低频总结，单人每小时最多更新一次，好感每次最多变化2分。仅影响语气，不影响权限和额度。成员可用/画像查看、更正或删除。"
+          },
+          "feedback_observe": {
+            "description": "回复反馈观察与评分",
+            "type": "bool",
+            "default": false,
+            "hint": "仅对绑定了非工作群人设的群生效。记录真实发送ID、引用与相关接话，10分钟后结算一次。关闭自适应策略时仅观察；可独立指定判断模型。"
+          },
+          "feedback_judge_provider_id": {
+            "description": "反馈、动态经验和表情包判断模型",
+            "type": "string",
+            "default": "",
+            "_special": "select_provider",
+            "hint": "留空使用本群聊天模型；理解表情包需要图片输入能力。判断调用不消耗群成员额度，不开放执行工具。"
+          },
+          "feedback_adapt_mode": {
+            "description": "反馈自适应策略",
+            "type": "string",
+            "options": [
+              "关闭",
+              "学习",
+              "对照"
+            ],
+            "default": "关闭",
+            "hint": "须同时开启反馈观察。学习：LinUCB选择表达和配图，真实结算反馈更新；判断模型每批至少8个新样本、间隔15分钟提炼经验。对照：每15分钟交替原策略与学习策略。按群独立，保持基础人设和发言频率。"
+          },
+          "sticker_learning": {
+            "description": "本群表情包收集和推荐",
+            "type": "bool",
+            "default": false,
+            "hint": "配合自适应策略启用。识别本群新图片，排除普通照片和工作截图；保留原动图，通过语义检索和判断模型选图。支持文字、纯表情包和文字配图，图片由插件发送；不同群不共用图库。"
+          },
+          "slang_learning": {
+            "description": "群内黑话与梗学习",
+            "type": "bool",
+            "default": false,
+            "hint": "按群和人设从真实前后文学习多义黑话与梗句。至少8条新发言才批量分析，每群间隔至少5分钟；经过多轮、多人佐证的用法才注入相关回复。工作群排除，不修改基础人设，不增加插话频率。"
+          },
+          "feedback_bot_ids": {
+            "description": "反馈统计排除的其他机器人QQ",
+            "type": "list",
+            "default": [],
+            "hint": "本机器人自动排除；填写群内其他机器人QQ，避免机器人互相回复增加分数。"
+          },
+          "memory_override": {
+            "description": "单独设置本群短期记忆",
+            "type": "bool",
+            "default": false,
+            "hint": "关闭时沿用通用设置；开启时使用下方五项数值。"
+          },
+          "history_turns": {
+            "description": "群聊最多保留对话轮数",
+            "type": "int",
+            "default": 10,
+            "hint": "包含本轮问答；按完整轮次截断，不生成长期摘要。仅群聊生效。"
+          },
+          "idle_hours": {
+            "description": "群聊空闲重置（小时）",
+            "type": "float",
+            "default": 2,
+            "hint": "成员会话超过此时间未请求聊天，下次请求前清空上下文，保留人设。"
+          },
+          "session_hours": {
+            "description": "群聊上下文最长延续（小时）",
+            "type": "float",
+            "default": 12,
+            "hint": "即使持续聊天，到期后下一次请求也从空上下文开始。"
+          },
+          "group_context_minutes": {
+            "description": "群消息参考时效（分钟）",
+            "type": "float",
+            "default": 30
+          },
+          "group_context_messages": {
+            "description": "最多参考群消息条数",
+            "type": "int",
+            "default": 30
+          }
+        }
+      }
+    }
+  },
+  "feedback_recheck_provider_id": {
+    "description": "不确定反馈的 Codex max 复核模型",
+    "type": "string",
+    "default": "local_codex/gpt-6.1-sol",
+    "_special": "select_provider",
+    "hint": "选择已启用的 gpt-6.1-sol/max Provider，并具备 chat_only_context 纯聊天边界。缺失或不符合条件时保留未知，不替换为其他模型。"
+  }
+}
