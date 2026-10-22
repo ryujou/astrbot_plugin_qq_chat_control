@@ -6,7 +6,7 @@
 
 AstrBot 完整插件 · 回复反馈 · 群内黑话 · 表情包 · 权限与人设
 
-[![Version](https://img.shields.io/badge/version-1.11.0-4f46e5?style=flat-square)](metadata.yaml)
+[![Version](https://img.shields.io/badge/version-1.11.1-4f46e5?style=flat-square)](metadata.yaml)
 [![AstrBot](https://img.shields.io/badge/AstrBot-%E2%89%A54.28%20%3C5-2563eb?style=flat-square)](https://github.com/AstrBotDevs/AstrBot)
 [![Platform](https://img.shields.io/badge/platform-QQ%20%2F%20OneBot-0891b2?style=flat-square)](#运行环境)
 [![License](https://img.shields.io/badge/license-MIT-16a34a?style=flat-square)](LICENSE)
@@ -222,6 +222,8 @@ Provider 缺失或条件不满足时，后台记录复核失败，不自动换�
 
 原生会话、模型、人设等管理命令沿用 AstrBot，但受本插件权限约束。`/codex账号` 由另外的账号切换扩展提供，未安装时本插件不会提供该命令。
 
+成员好感初始为 50，范围 0～100，仅影响聊天语气。明确 @、引用机器人或已有机器人回复的互动，不必累计到 20 条，每人至少间隔一分钟合并判断；后台优先处理互动，每轮最多处理四位成员。明确恶意辱骂通常减 10，严重或持续恶意最多减 15，真诚友好互动加 2，实际帮助或持续善意最多加 5，一批只结算一个净变化。正常纠错、转述脏话、玩笑和刷分要求不应改变好感。非零变化需要对应本人原话；置信度不足或证据对不上时调用 Codex max 复核，仍未知或复核失败则保留原分。普通旁观发言仍需至少 20 条、间隔一小时才总结画像。历史分数不会因更新插件而统一改写。
+
 短期记忆默认保留 10 轮，空闲 2 小时或连续延续 12 小时后在下次请求时重置上下文；群消息参考默认 30 分钟、最多 30 条。每群可通过 `memory_override` 单独设置。
 
 工作过程反馈可设为 `关闭`、`状态`、`详细`，仅在兼容 Provider 的完整工具请求中生效。自动搭话和限额聊天使用纯聊天路径。群人设名称为 `工作群` 时排除回复反馈、黑话和自适应表情包学习；其他工作人设应自行关闭对应学习开关。
@@ -266,7 +268,7 @@ python -m pip install -r requirements.txt
 python tests/run.py
 ```
 
-当前包含 **107 项自动化用例**，覆盖引用归因、未知与失败结算、不确定反馈复核、负面证据、反例经验、群隔离、黑话、GIF、选图概率、对照配对、调用用量和页面 API 等。测试使用临时数据和模拟 Provider，不需要真实 QQ 账号，也不会向群发送测试消息。
+当前包含 **129 项自动化用例**，覆盖引用归因、未知与失败结算、不确定反馈复核、负面证据、反例经验、群隔离、黑话、GIF、选图概率、对照配对、调用用量、页面 API、成员好感及时更新与原话校验等。测试使用临时数据和模拟 Provider，不需要真实 QQ 账号，也不会向群发送测试消息。
 
 源码职责：`learning.py` 记录与结算反馈，`strategy.py` 选择行动与整理经验，`evaluation.py` 统计对照，`slang.py` / `stickers.py` 处理词义与图片，`web.py` 和 `pages/learning/` 提供看板；`main.py` 连接权限、会话与 AstrBot 生命周期。
 
