@@ -176,13 +176,12 @@ class SlangTests(unittest.IsolatedAsyncioTestCase):
         self.addCleanup(self.learning.close)
         self.assertTrue(self.slang.relevant('qq_private', '10006', '机器人又死了'))
 
-    async def test_invalid_batch_rolls_back_all_terms(self):
+    async def test_invalid_term_preserves_valid_terms(self):
         batch = self.seed()
         data = self.data(batch)
         data['terms'].append(dict(term='另一个词', senses='invalid'))
-        with self.assertRaises(ValueError):
-            self.apply(batch, data)
-        self.assertEqual(self.slang.entries('qq_private', '10006'), [])
+        self.apply(batch, data)
+        self.assertEqual([r['term'] for r in self.slang.entries('qq_private', '10006')], ['死了'])
 
     async def test_model_failure_is_logged_and_does_not_invent_meaning(self):
         self.seed(start=1000)

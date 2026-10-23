@@ -16,7 +16,7 @@ EXTRACT_PROMPT = '''你负责从真实QQ群对话学习本群黑话、简称、�
 每个用法提供原始新发言message_id作为evidence_ids；只引用messages中真正包含term且体现该含义的发言，不引用nearby或known里的旧证据。
 有明确上下文的一条新用法可保留为候选，后续由程序累计多轮、多条发言和多位成员的证据；不要为了凑次数伪造证据，也不能将单条候选说成群内共识。confidence只表示语境证据充分程度。
 保留合适使用场景scene和少量话题线索clues，便于自然借梗；不要给出必须使用该梗的指令，不编造出处、成员私生活或敏感事实。
-最多8个词，每词最多3种用法。只输出JSON：{"terms":[{"term":"原文词或短句","senses":[{"sense_id":null,"meaning":"本群语境中的含义","scene":"适用话题及与字面用法的区别","clues":["话题线索"],"confidence":0.9,"evidence_ids":["原始ID1","原始ID2"]}]}]}。
+最多8个词，term为1至24字符且包含文字或数字，每词1至3种用法。meaning最多160字符，scene最多200字符，clues最多6项且每项最多24字符；confidence为0至1数值。只输出JSON：{"terms":[{"term":"原文词或短句","senses":[{"sense_id":null,"meaning":"本群语境中的含义","scene":"适用话题及与字面用法的区别","clues":["话题线索"],"confidence":0.9,"evidence_ids":["原始ID1","原始ID2"]}]}]}。
 没有足够证据时返回{"terms":[]}。'''
 
 USAGE_GUIDE = '''
@@ -145,10 +145,13 @@ class GroupSlang:
         source = {item['message_id']: item for item in batch['messages']}
         with db:
             for item in terms:
-                term, updates = item['term'].strip(), item['senses']
+                term = item.get('term') if isinstance(item, dict) else None
+                updates = item.get('senses') if isinstance(item, dict) else None
+                term = term.strip() if isinstance(term, str) else ''
                 if (not 1 <= len(term) <= 24 or not any(c.isalnum() for c in term)
                         or not isinstance(updates, list) or not 1 <= len(updates) <= 3):
-                    raise ValueError('群内用语分析词条格式错误')
+                    logger.warning('跳过不合格黑话词条：词条须为1至24字符且包含文字或数字，用法须为1至3项列表')
+                    continue
                 old = db.execute('SELECT senses FROM slang_terms WHERE platform=? AND group_id=? AND persona=? AND term=?',
                                  (*scope, term)).fetchone()
                 senses = json.loads(old['senses']) if old else []

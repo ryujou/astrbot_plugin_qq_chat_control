@@ -183,6 +183,25 @@ class BackgroundTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(reply['finished'], 1)
         self.assertIsNone(self.learning.db.execute('SELECT propensity FROM reply_actions').fetchone()[0])
 
+    async def test_invalid_candidates_are_rejected_individually(self):
+        scope = self.setup_background()
+        self.bg.context = AsyncMock(return_value={})
+        self.stickers.ranked_pool = AsyncMock(return_value=[])
+        candidates = self.candidates()
+        candidates[0]['intensity'] = 100
+        candidates[1]['sticker_id'] = 'invented'
+        self.choose.generate = AsyncMock(return_value=dict(items=candidates))
+        self.policy.judge = AsyncMock(return_value=json.dumps(dict(items=self.review()['items'][2:])))
+        record = {}
+        selected = await self.choose.choose(scope, NS(system_prompt='群友'), [], record)
+        self.assertEqual(selected['id'], 3)
+        self.assertTrue(record['candidates'][0]['rejected'])
+        self.assertTrue(record['candidates'][1]['rejected'])
+        candidates[2]['text'] = ''
+        self.policy.judge.reset_mock()
+        self.assertIsNone(await self.choose.choose(scope, NS(system_prompt='群友'), [], {}))
+        self.policy.judge.assert_not_awaited()
+
     async def test_stale_or_uncertain_candidate_is_not_sent(self):
         scope = self.setup_background()
         self.bg.context = AsyncMock(return_value={})
