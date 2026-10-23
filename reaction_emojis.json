@@ -1,0 +1,3228 @@
+{
+  "source": "https://github.com/koishijs/QFace",
+  "synced_at": "2026-09-28T03:43:28.805Z",
+  "emojis": {
+    "0": {
+      "name": "惊讶",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/0/png/0.png"
+    },
+    "1": {
+      "name": "撇嘴",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/1/png/1.png"
+    },
+    "2": {
+      "name": "色",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/2/png/2.png"
+    },
+    "3": {
+      "name": "发呆",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/3/png/3.png"
+    },
+    "4": {
+      "name": "得意",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/4/png/4.png"
+    },
+    "5": {
+      "name": "流泪",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/5/png/5.png"
+    },
+    "6": {
+      "name": "害羞",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/6/png/6.png"
+    },
+    "7": {
+      "name": "闭嘴",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/7/png/7.png"
+    },
+    "8": {
+      "name": "睡",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/8/png/8.png"
+    },
+    "9": {
+      "name": "大哭",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/9/png/9.png"
+    },
+    "10": {
+      "name": "尴尬",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/10/png/10.png"
+    },
+    "11": {
+      "name": "发怒",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/11/png/11.png"
+    },
+    "12": {
+      "name": "调皮",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/12/png/12.png"
+    },
+    "13": {
+      "name": "呲牙",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/13/png/13.png"
+    },
+    "14": {
+      "name": "微笑",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/14/png/14.png"
+    },
+    "15": {
+      "name": "难过",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/15/png/15.png"
+    },
+    "16": {
+      "name": "酷",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/16/png/16.png"
+    },
+    "18": {
+      "name": "抓狂",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/18/png/18.png"
+    },
+    "19": {
+      "name": "吐",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/19/png/19.png"
+    },
+    "20": {
+      "name": "偷笑",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/20/png/20.png"
+    },
+    "21": {
+      "name": "可爱",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/21/png/21.png"
+    },
+    "22": {
+      "name": "白眼",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/22/png/22.png"
+    },
+    "23": {
+      "name": "傲慢",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/23/png/23.png"
+    },
+    "24": {
+      "name": "饥饿",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/24/png/24.png"
+    },
+    "25": {
+      "name": "困",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/25/png/25.png"
+    },
+    "26": {
+      "name": "惊恐",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/26/png/26.png"
+    },
+    "27": {
+      "name": "流汗",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/27/png/27.png"
+    },
+    "28": {
+      "name": "憨笑",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/28/png/28.png"
+    },
+    "29": {
+      "name": "悠闲",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/29/png/29.png"
+    },
+    "30": {
+      "name": "奋斗",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/30/png/30.png"
+    },
+    "31": {
+      "name": "咒骂",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/31/png/31.png"
+    },
+    "32": {
+      "name": "疑问",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/32/png/32.png"
+    },
+    "33": {
+      "name": "嘘",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/33/png/33.png"
+    },
+    "34": {
+      "name": "晕",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/34/png/34.png"
+    },
+    "35": {
+      "name": "折磨",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/35/png/35.png"
+    },
+    "36": {
+      "name": "衰",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/36/png/36.png"
+    },
+    "37": {
+      "name": "骷髅",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/37/png/37.png"
+    },
+    "38": {
+      "name": "敲打",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/38/png/38.png"
+    },
+    "39": {
+      "name": "再见",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/39/png/39.png"
+    },
+    "41": {
+      "name": "发抖",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/41/png/41.png"
+    },
+    "42": {
+      "name": "爱情",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/42/png/42.png"
+    },
+    "43": {
+      "name": "跳跳",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/43/png/43.png"
+    },
+    "46": {
+      "name": "猪头",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/46/png/46.png"
+    },
+    "49": {
+      "name": "拥抱",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/49/png/49.png"
+    },
+    "53": {
+      "name": "蛋糕",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/53/png/53.png"
+    },
+    "55": {
+      "name": "炸弹",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/55/png/55.png"
+    },
+    "56": {
+      "name": "刀",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/56/png/56.png"
+    },
+    "59": {
+      "name": "便便",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/59/png/59.png"
+    },
+    "60": {
+      "name": "咖啡",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/60/png/60.png"
+    },
+    "63": {
+      "name": "玫瑰",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/63/png/63.png"
+    },
+    "64": {
+      "name": "凋谢",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/64/png/64.png"
+    },
+    "66": {
+      "name": "爱心",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/66/png/66.png"
+    },
+    "67": {
+      "name": "心碎",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/67/png/67.png"
+    },
+    "74": {
+      "name": "太阳",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/74/png/74.png"
+    },
+    "75": {
+      "name": "月亮",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/75/png/75.png"
+    },
+    "76": {
+      "name": "赞",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/76/png/76.png"
+    },
+    "77": {
+      "name": "踩",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/77/png/77.png"
+    },
+    "78": {
+      "name": "握手",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/78/png/78.png"
+    },
+    "79": {
+      "name": "胜利",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/79/png/79.png"
+    },
+    "85": {
+      "name": "飞吻",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/85/png/85.png"
+    },
+    "86": {
+      "name": "怄火",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/86/png/86.png"
+    },
+    "89": {
+      "name": "西瓜",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/89/png/89.png"
+    },
+    "96": {
+      "name": "冷汗",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/96/png/96.png"
+    },
+    "97": {
+      "name": "擦汗",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/97/png/97.png"
+    },
+    "98": {
+      "name": "抠鼻",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/98/png/98.png"
+    },
+    "99": {
+      "name": "鼓掌",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/99/png/99.png"
+    },
+    "100": {
+      "name": "糗大了",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/100/png/100.png"
+    },
+    "101": {
+      "name": "坏笑",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/101/png/101.png"
+    },
+    "102": {
+      "name": "左哼哼",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/102/png/102.png"
+    },
+    "103": {
+      "name": "右哼哼",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/103/png/103.png"
+    },
+    "104": {
+      "name": "哈欠",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/104/png/104.png"
+    },
+    "105": {
+      "name": "鄙视",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/105/png/105.png"
+    },
+    "106": {
+      "name": "委屈",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/106/png/106.png"
+    },
+    "107": {
+      "name": "快哭了",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/107/png/107.png"
+    },
+    "108": {
+      "name": "阴险",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/108/png/108.png"
+    },
+    "109": {
+      "name": "左亲亲",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/109/png/109.png"
+    },
+    "110": {
+      "name": "吓",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/110/png/110.png"
+    },
+    "111": {
+      "name": "可怜",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/111/png/111.png"
+    },
+    "112": {
+      "name": "菜刀",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/112/png/112.png"
+    },
+    "114": {
+      "name": "篮球",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/114/png/114.png"
+    },
+    "116": {
+      "name": "示爱",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/116/png/116.png"
+    },
+    "118": {
+      "name": "抱拳",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/118/png/118.png"
+    },
+    "119": {
+      "name": "勾引",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/119/png/119.png"
+    },
+    "120": {
+      "name": "拳头",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/120/png/120.png"
+    },
+    "121": {
+      "name": "差劲",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/121/png/121.png"
+    },
+    "122": {
+      "name": "爱你",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "123": {
+      "name": "NO",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/123/png/123.png"
+    },
+    "124": {
+      "name": "OK",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/124/png/124.png"
+    },
+    "125": {
+      "name": "转圈",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/125/png/125.png"
+    },
+    "129": {
+      "name": "挥手",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/129/png/129.png"
+    },
+    "137": {
+      "name": "鞭炮",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/137/png/137.png"
+    },
+    "144": {
+      "name": "喝彩",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/144/png/144.png"
+    },
+    "146": {
+      "name": "爆筋",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/146/png/146.png"
+    },
+    "147": {
+      "name": "棒棒糖",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/147/png/147.png"
+    },
+    "148": {
+      "name": "喝奶",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/148/png/148.png"
+    },
+    "169": {
+      "name": "手枪",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/169/png/169.png"
+    },
+    "171": {
+      "name": "茶",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/171/png/171.png"
+    },
+    "172": {
+      "name": "眨眼睛",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/172/png/172.png"
+    },
+    "173": {
+      "name": "泪奔",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/173/png/173.png"
+    },
+    "174": {
+      "name": "无奈",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/174/png/174.png"
+    },
+    "175": {
+      "name": "卖萌",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/175/png/175.png"
+    },
+    "176": {
+      "name": "小纠结",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/176/png/176.png"
+    },
+    "177": {
+      "name": "喷血",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/177/png/177.png"
+    },
+    "178": {
+      "name": "斜眼笑",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/178/png/178.png"
+    },
+    "179": {
+      "name": "doge",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/179/png/179.png"
+    },
+    "180": {
+      "name": "惊喜",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "181": {
+      "name": "戳一戳",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/181/png/181.png"
+    },
+    "182": {
+      "name": "笑哭",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/182/png/182.png"
+    },
+    "183": {
+      "name": "我最美",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/183/png/183.png"
+    },
+    "185": {
+      "name": "羊驼",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/185/png/185.png"
+    },
+    "187": {
+      "name": "幽灵",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/187/png/187.png"
+    },
+    "193": {
+      "name": "大笑",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "194": {
+      "name": "不开心",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "198": {
+      "name": "呃",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "200": {
+      "name": "求求",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "201": {
+      "name": "点赞",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/201/png/201.png"
+    },
+    "202": {
+      "name": "无聊",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "203": {
+      "name": "托脸",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "204": {
+      "name": "吃",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "206": {
+      "name": "害怕",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "210": {
+      "name": "飙泪",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "211": {
+      "name": "我不看",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "212": {
+      "name": "托腮",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/212/png/212.png"
+    },
+    "214": {
+      "name": "啵啵",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "215": {
+      "name": "糊脸",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "216": {
+      "name": "拍头",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "217": {
+      "name": "扯一扯",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "218": {
+      "name": "舔一舔",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "219": {
+      "name": "蹭一蹭",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "221": {
+      "name": "顶呱呱",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "222": {
+      "name": "抱抱",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "223": {
+      "name": "暴击",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "224": {
+      "name": "开枪",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "225": {
+      "name": "撩一撩",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "226": {
+      "name": "拍桌",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "227": {
+      "name": "拍手",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "229": {
+      "name": "干杯",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "230": {
+      "name": "嘲讽",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "231": {
+      "name": "哼",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "232": {
+      "name": "佛系",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "233": {
+      "name": "掐一掐",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "235": {
+      "name": "颤抖",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "237": {
+      "name": "偷看",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "238": {
+      "name": "扇脸",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "239": {
+      "name": "原谅",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "240": {
+      "name": "喷脸",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "241": {
+      "name": "生日快乐",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "243": {
+      "name": "甩头",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "244": {
+      "name": "扔狗",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "262": {
+      "name": "脑阔疼",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/262/png/262.png"
+    },
+    "263": {
+      "name": "沧桑",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/263/png/263.png"
+    },
+    "264": {
+      "name": "捂脸",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/264/png/264.png"
+    },
+    "265": {
+      "name": "辣眼睛",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/265/png/265.png"
+    },
+    "266": {
+      "name": "哦哟",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/266/png/266.png"
+    },
+    "267": {
+      "name": "头秃",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/267/png/267.png"
+    },
+    "268": {
+      "name": "问号脸",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/268/png/268.png"
+    },
+    "269": {
+      "name": "暗中观察",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/269/png/269.png"
+    },
+    "270": {
+      "name": "emm",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/270/png/270.png"
+    },
+    "271": {
+      "name": "吃瓜",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/271/png/271.png"
+    },
+    "272": {
+      "name": "呵呵哒",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/272/png/272.png"
+    },
+    "273": {
+      "name": "我酸了",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/273/png/273.png"
+    },
+    "277": {
+      "name": "汪汪",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/277/png/277.png"
+    },
+    "278": {
+      "name": "汗",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "281": {
+      "name": "无眼笑",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/281/png/281.png"
+    },
+    "282": {
+      "name": "敬礼",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/282/png/282.png"
+    },
+    "283": {
+      "name": "狂笑",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/283/png/283.png"
+    },
+    "284": {
+      "name": "面无表情",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/284/png/284.png"
+    },
+    "285": {
+      "name": "摸鱼",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/285/png/285.png"
+    },
+    "286": {
+      "name": "魔鬼笑",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/286/png/286.png"
+    },
+    "287": {
+      "name": "哦",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/287/png/287.png"
+    },
+    "288": {
+      "name": "请",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "289": {
+      "name": "睁眼",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/289/png/289.png"
+    },
+    "290": {
+      "name": "敲开心",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "292": {
+      "name": "让我康康",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "293": {
+      "name": "摸锦鲤",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/293/png/293.png"
+    },
+    "294": {
+      "name": "期待",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/294/png/294.png"
+    },
+    "295": {
+      "name": "拿到红包",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/295/png/295.png"
+    },
+    "297": {
+      "name": "拜谢",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/297/png/297.png"
+    },
+    "298": {
+      "name": "元宝",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/298/png/298.png"
+    },
+    "299": {
+      "name": "牛啊",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/299/png/299.png"
+    },
+    "300": {
+      "name": "胖三斤",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/300/png/300.png"
+    },
+    "301": {
+      "name": "好闪",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "302": {
+      "name": "左拜年",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/302/png/302.png"
+    },
+    "303": {
+      "name": "右拜年",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/303/png/303.png"
+    },
+    "305": {
+      "name": "右亲亲",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/305/png/305.png"
+    },
+    "306": {
+      "name": "牛气冲天",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/306/png/306.png"
+    },
+    "307": {
+      "name": "喵喵",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/307/png/307.png"
+    },
+    "311": {
+      "name": "打call",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/311/png/311.png"
+    },
+    "312": {
+      "name": "变形",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/312/png/312.png"
+    },
+    "314": {
+      "name": "仔细分析",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/314/png/314.png"
+    },
+    "317": {
+      "name": "菜汪",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/317/png/317.png"
+    },
+    "318": {
+      "name": "崇拜",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/318/png/318.png"
+    },
+    "319": {
+      "name": "比心",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/319/png/319.png"
+    },
+    "320": {
+      "name": "庆祝",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/320/png/320.png"
+    },
+    "322": {
+      "name": "拒绝",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "323": {
+      "name": "嫌弃",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/323/png/323.png"
+    },
+    "324": {
+      "name": "吃糖",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/324/png/324.png"
+    },
+    "325": {
+      "name": "惊吓",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/325/png/325.png"
+    },
+    "326": {
+      "name": "生气",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/326/png/326.png"
+    },
+    "332": {
+      "name": "举牌牌",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/332/png/332.png"
+    },
+    "333": {
+      "name": "烟花",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/333/png/333.png"
+    },
+    "334": {
+      "name": "虎虎生威",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/334/png/334.png"
+    },
+    "336": {
+      "name": "豹富",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/336/png/336.png"
+    },
+    "337": {
+      "name": "花朵脸",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/337/png/337.png"
+    },
+    "338": {
+      "name": "我想开了",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/338/png/338.png"
+    },
+    "339": {
+      "name": "舔屏",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/339/png/339.png"
+    },
+    "341": {
+      "name": "打招呼",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/341/png/341.png"
+    },
+    "342": {
+      "name": "酸Q",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/342/png/342.png"
+    },
+    "343": {
+      "name": "我方了",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/343/png/343.png"
+    },
+    "344": {
+      "name": "大怨种",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/344/png/344.png"
+    },
+    "345": {
+      "name": "红包多多",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/345/png/345.png"
+    },
+    "346": {
+      "name": "你真棒棒",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/346/png/346.png"
+    },
+    "347": {
+      "name": "大展宏兔",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/347/png/347.png"
+    },
+    "348": {
+      "name": "福萝卜",
+      "type": "1",
+      "symbol": "",
+      "image": ""
+    },
+    "349": {
+      "name": "坚强",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/349/png/349.png"
+    },
+    "350": {
+      "name": "贴贴",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/350/png/350.png"
+    },
+    "351": {
+      "name": "敲敲",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/351/png/351.png"
+    },
+    "352": {
+      "name": "咦",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/352/png/352.png"
+    },
+    "353": {
+      "name": "拜托",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/353/png/353.png"
+    },
+    "354": {
+      "name": "尊嘟假嘟",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/354/png/354.png"
+    },
+    "355": {
+      "name": "耶",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/355/png/355.png"
+    },
+    "356": {
+      "name": "666",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/356/png/356.png"
+    },
+    "357": {
+      "name": "裂开",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/357/png/357.png"
+    },
+    "358": {
+      "name": "骰子",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/358/png/358.png"
+    },
+    "359": {
+      "name": "包剪锤",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/359/png/359.png"
+    },
+    "360": {
+      "name": "亲亲",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/360/png/360.png"
+    },
+    "361": {
+      "name": "狗狗笑哭",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/361/png/361.png"
+    },
+    "362": {
+      "name": "好兄弟",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/362/png/362.png"
+    },
+    "363": {
+      "name": "狗狗可怜",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/363/png/363.png"
+    },
+    "364": {
+      "name": "超级赞",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/364/png/364.png"
+    },
+    "365": {
+      "name": "狗狗生气",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/365/png/365.png"
+    },
+    "366": {
+      "name": "芒狗",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/366/png/366.png"
+    },
+    "367": {
+      "name": "狗狗疑问",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/367/png/367.png"
+    },
+    "368": {
+      "name": "奥特笑哭",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/368/png/368.png"
+    },
+    "369": {
+      "name": "彩虹",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/369/png/369.png"
+    },
+    "370": {
+      "name": "祝贺",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/370/png/370.png"
+    },
+    "371": {
+      "name": "冒泡",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/371/png/371.png"
+    },
+    "372": {
+      "name": "气呼呼",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/372/png/372.png"
+    },
+    "373": {
+      "name": "忙",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/373/png/373.png"
+    },
+    "374": {
+      "name": "波波流泪",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/374/png/374.png"
+    },
+    "375": {
+      "name": "超级鼓掌",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/375/png/375.png"
+    },
+    "376": {
+      "name": "跺脚",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/376/png/376.png"
+    },
+    "377": {
+      "name": "嗨",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/377/png/377.png"
+    },
+    "378": {
+      "name": "企鹅笑哭",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/378/png/378.png"
+    },
+    "379": {
+      "name": "企鹅流泪",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/379/png/379.png"
+    },
+    "380": {
+      "name": "真棒",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/380/png/380.png"
+    },
+    "381": {
+      "name": "路过",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/381/png/381.png"
+    },
+    "382": {
+      "name": "emo",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/382/png/382.png"
+    },
+    "383": {
+      "name": "企鹅爱心",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/383/png/383.png"
+    },
+    "384": {
+      "name": "晚安",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/384/png/384.png"
+    },
+    "385": {
+      "name": "太气了",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/385/png/385.png"
+    },
+    "386": {
+      "name": "呜呜呜",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/386/png/386.png"
+    },
+    "387": {
+      "name": "太好笑",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/387/png/387.png"
+    },
+    "388": {
+      "name": "太头疼",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/388/png/388.png"
+    },
+    "389": {
+      "name": "太赞了",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/389/png/389.png"
+    },
+    "390": {
+      "name": "太头秃",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/390/png/390.png"
+    },
+    "391": {
+      "name": "太沧桑",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/391/png/391.png"
+    },
+    "392": {
+      "name": "龙年快乐",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/392/png/392.png"
+    },
+    "393": {
+      "name": "新年中龙",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/393/png/393.png"
+    },
+    "394": {
+      "name": "新年大龙",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/394/png/394.png"
+    },
+    "395": {
+      "name": "略略略",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/395/png/395.png"
+    },
+    "396": {
+      "name": "狼狗",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/396/png/396.png"
+    },
+    "397": {
+      "name": "抛媚眼",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/397/png/397.png"
+    },
+    "398": {
+      "name": "超级ok",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/398/png/398.png"
+    },
+    "399": {
+      "name": "tui",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/399/png/399.png"
+    },
+    "400": {
+      "name": "快乐",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/400/png/400.png"
+    },
+    "401": {
+      "name": "超级转圈",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/401/png/401.png"
+    },
+    "402": {
+      "name": "别说话",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/402/png/402.png"
+    },
+    "403": {
+      "name": "出去玩",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/403/png/403.png"
+    },
+    "404": {
+      "name": "闪亮登场",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/404/png/404.png"
+    },
+    "405": {
+      "name": "好运来",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/405/png/405.png"
+    },
+    "406": {
+      "name": "姐是女王",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/406/png/406.png"
+    },
+    "407": {
+      "name": "我听听",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/407/png/407.png"
+    },
+    "408": {
+      "name": "臭美",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/408/png/408.png"
+    },
+    "409": {
+      "name": "送你花花",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/409/png/409.png"
+    },
+    "410": {
+      "name": "么么哒",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/410/png/410.png"
+    },
+    "411": {
+      "name": "一起嗨",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/411/png/411.png"
+    },
+    "412": {
+      "name": "开心",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/412/png/412.png"
+    },
+    "413": {
+      "name": "摇起来",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/413/png/413.png"
+    },
+    "415": {
+      "name": "划龙舟",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/415/png/415.png"
+    },
+    "416": {
+      "name": "中龙舟",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/416/png/416.png"
+    },
+    "417": {
+      "name": "大龙舟",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/417/png/417.png"
+    },
+    "418": {
+      "name": "填罐罐",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/418/png/418.png"
+    },
+    "419": {
+      "name": "火车",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/419/png/419.png"
+    },
+    "420": {
+      "name": "中火车",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/420/png/420.png"
+    },
+    "421": {
+      "name": "大火车",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/421/png/421.png"
+    },
+    "422": {
+      "name": "粽于等到你",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/422/png/422.png"
+    },
+    "423": {
+      "name": "复兴号",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/423/png/423.png"
+    },
+    "424": {
+      "name": "续标识",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/424/png/424.png"
+    },
+    "425": {
+      "name": "求放过",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/425/png/425.png"
+    },
+    "426": {
+      "name": "玩火",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/426/png/426.png"
+    },
+    "427": {
+      "name": "偷感",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/427/png/427.png"
+    },
+    "428": {
+      "name": "收到",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/428/png/428.png"
+    },
+    "429": {
+      "name": "蛇年快乐",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/429/png/429.png"
+    },
+    "430": {
+      "name": "蛇身",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/430/png/430.png"
+    },
+    "431": {
+      "name": "蛇尾",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/431/png/431.png"
+    },
+    "432": {
+      "name": "灵蛇献瑞",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/432/png/432.png"
+    },
+    "433": {
+      "name": "大鸽",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/433/png/433.png"
+    },
+    "434": {
+      "name": "鸽来了",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/434/png/434.png"
+    },
+    "435": {
+      "name": "关我鸟事",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/435/png/435.png"
+    },
+    "436": {
+      "name": "跟鸽走",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/436/png/436.png"
+    },
+    "437": {
+      "name": "鸽鸽生气",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/437/png/437.png"
+    },
+    "438": {
+      "name": "可靠",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/438/png/438.png"
+    },
+    "439": {
+      "name": "鸽瞅瞅",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/439/png/439.png"
+    },
+    "440": {
+      "name": "鸽喜欢",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/440/png/440.png"
+    },
+    "441": {
+      "name": "相信鸽",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/441/png/441.png"
+    },
+    "442": {
+      "name": "鸽王",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/442/png/442.png"
+    },
+    "443": {
+      "name": "戳一下",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/443/png/443.png"
+    },
+    "444": {
+      "name": "超级6",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/444/png/444.png"
+    },
+    "445": {
+      "name": "比个心",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/445/png/445.png"
+    },
+    "446": {
+      "name": "超级心碎",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/446/png/446.png"
+    },
+    "447": {
+      "name": "太赞了",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/447/png/447.png"
+    },
+    "448": {
+      "name": "放大招",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/448/png/448.png"
+    },
+    "449": {
+      "name": "+1",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/449/png/449.png"
+    },
+    "450": {
+      "name": "撇嘴",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/450/png/450.png"
+    },
+    "451": {
+      "name": "色",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/451/png/451.png"
+    },
+    "452": {
+      "name": "微笑",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/452/png/452.png"
+    },
+    "453": {
+      "name": "发呆",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/453/png/453.png"
+    },
+    "454": {
+      "name": "得意",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/454/png/454.png"
+    },
+    "455": {
+      "name": "害羞",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/455/png/455.png"
+    },
+    "456": {
+      "name": "闭嘴",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/456/png/456.png"
+    },
+    "457": {
+      "name": "睡",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/457/png/457.png"
+    },
+    "458": {
+      "name": "我吗",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/458/png/458.png"
+    },
+    "459": {
+      "name": "优雅",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/459/png/459.png"
+    },
+    "460": {
+      "name": "硬撑",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/460/png/460.png"
+    },
+    "461": {
+      "name": "宕机",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/461/png/461.png"
+    },
+    "462": {
+      "name": "无语",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/462/png/462.png"
+    },
+    "463": {
+      "name": "新年快乐",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/463/png/463.png"
+    },
+    "464": {
+      "name": "马上到",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/464/png/464.png"
+    },
+    "465": {
+      "name": "拆红包",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/465/png/465.png"
+    },
+    "466": {
+      "name": "羞羞哒",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/466/png/466.png"
+    },
+    "467": {
+      "name": "摇花手",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/467/png/467.png"
+    },
+    "468": {
+      "name": "失眠",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/468/png/468.png"
+    },
+    "469": {
+      "name": "坚毅",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/469/png/469.png"
+    },
+    "470": {
+      "name": "马到成功",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/470/png/470.png"
+    },
+    "471": {
+      "name": "深情",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/471/png/471.png"
+    },
+    "472": {
+      "name": "心动",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/472/png/472.png"
+    },
+    "473": {
+      "name": "爱意",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/473/png/473.png"
+    },
+    "474": {
+      "name": "给你一拳",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/474/png/474.png"
+    },
+    "475": {
+      "name": "干饭",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/475/png/475.png"
+    },
+    "476": {
+      "name": "不是吧",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/476/png/476.png"
+    },
+    "477": {
+      "name": "你懂的",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/477/png/477.png"
+    },
+    "478": {
+      "name": "对的对的",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/478/png/478.png"
+    },
+    "479": {
+      "name": "不对不对",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/479/png/479.png"
+    },
+    "480": {
+      "name": "散味儿",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/480/png/480.png"
+    },
+    "481": {
+      "name": "学习",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/481/png/481.png"
+    },
+    "482": {
+      "name": "热化了",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/482/png/482.png"
+    },
+    "483": {
+      "name": "略",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/483/png/483.png"
+    },
+    "484": {
+      "name": "比爱心",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/484/png/484.png"
+    },
+    "485": {
+      "name": "开学啦",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/485/png/485.png"
+    },
+    "486": {
+      "name": "开学啦2",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/486/png/486.png"
+    },
+    "487": {
+      "name": "开学啦3",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/487/png/487.png"
+    },
+    "488": {
+      "name": "开学大吉",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/488/png/488.png"
+    },
+    "489": {
+      "name": "知识增加",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/489/png/489.png"
+    },
+    "490": {
+      "name": "能送我吗",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/490/png/490.png"
+    },
+    "491": {
+      "name": "自信学霸",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/491/png/491.png"
+    },
+    "492": {
+      "name": "让我细品",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/492/png/492.png"
+    },
+    "493": {
+      "name": "又是早八",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/493/png/493.png"
+    },
+    "494": {
+      "name": "举杯邀月",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/494/png/494.png"
+    },
+    "495": {
+      "name": "兔来",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/495/png/495.png"
+    },
+    "496": {
+      "name": "阴晴圆缺",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/496/png/496.png"
+    },
+    "497": {
+      "name": "休假了",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/497/png/497.png"
+    },
+    "498": {
+      "name": "中!",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/498/png/498.png"
+    },
+    "499": {
+      "name": "观月C位",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/499/png/499.png"
+    },
+    "500": {
+      "name": "秋秋赏月",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/500/png/500.png"
+    },
+    "501": {
+      "name": "秋秋之约",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/501/png/501.png"
+    },
+    "502": {
+      "name": "秋秋泛舟",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/502/png/502.png"
+    },
+    "503": {
+      "name": "秋愿达成",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/503/png/503.png"
+    },
+    "504": {
+      "name": "同你玩",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/504/png/504.png"
+    },
+    "505": {
+      "name": "送花花",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/505/png/505.png"
+    },
+    "506": {
+      "name": "捡到宝了",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/506/png/506.png"
+    },
+    "507": {
+      "name": "被发现了",
+      "type": "1",
+      "symbol": "",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/507/png/507.png"
+    },
+    "9728": {
+      "name": "晴天",
+      "type": "2",
+      "symbol": "☀",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/☀/png/☀.png"
+    },
+    "9729": {
+      "name": "云朵",
+      "type": "2",
+      "symbol": "☁",
+      "image": ""
+    },
+    "9742": {
+      "name": "电话",
+      "type": "2",
+      "symbol": "☎",
+      "image": ""
+    },
+    "9748": {
+      "name": "雨天",
+      "type": "2",
+      "symbol": "☔",
+      "image": ""
+    },
+    "9749": {
+      "name": "咖啡",
+      "type": "2",
+      "symbol": "☕",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/☕/png/☕.png"
+    },
+    "9757": {
+      "name": "向上",
+      "type": "2",
+      "symbol": "☝",
+      "image": ""
+    },
+    "9786": {
+      "name": "可爱",
+      "type": "2",
+      "symbol": "☺",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/☺/png/☺.png"
+    },
+    "9827": {
+      "name": "扑克",
+      "type": "2",
+      "symbol": "♣",
+      "image": ""
+    },
+    "9832": {
+      "name": "热",
+      "type": "2",
+      "symbol": "♨",
+      "image": ""
+    },
+    "9889": {
+      "name": "闪电",
+      "type": "2",
+      "symbol": "⚡",
+      "image": ""
+    },
+    "9924": {
+      "name": "雪人",
+      "type": "2",
+      "symbol": "⛄",
+      "image": ""
+    },
+    "9962": {
+      "name": "教堂",
+      "type": "2",
+      "symbol": "⛪",
+      "image": ""
+    },
+    "9973": {
+      "name": "船",
+      "type": "2",
+      "symbol": "⛵",
+      "image": ""
+    },
+    "9992": {
+      "name": "飞机",
+      "type": "2",
+      "symbol": "✈",
+      "image": ""
+    },
+    "9996": {
+      "name": "胜利",
+      "type": "2",
+      "symbol": "✌",
+      "image": ""
+    },
+    "10024": {
+      "name": "闪光",
+      "type": "2",
+      "symbol": "✨",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/✨/png/✨.png"
+    },
+    "10060": {
+      "name": "错误",
+      "type": "2",
+      "symbol": "❌",
+      "image": ""
+    },
+    "10068": {
+      "name": "问号",
+      "type": "2",
+      "symbol": "❔",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/❔/png/❔.png"
+    },
+    "10069": {
+      "name": "叹号",
+      "type": "2",
+      "symbol": "❕",
+      "image": ""
+    },
+    "11088": {
+      "name": "星星",
+      "type": "2",
+      "symbol": "⭐",
+      "image": ""
+    },
+    "11093": {
+      "name": "正确",
+      "type": "2",
+      "symbol": "⭕",
+      "image": ""
+    },
+    "12349": {
+      "name": "股票",
+      "type": "2",
+      "symbol": "〽",
+      "image": ""
+    },
+    "126980": {
+      "name": "麻将",
+      "type": "2",
+      "symbol": "🀄",
+      "image": ""
+    },
+    "127746": {
+      "name": "雨伞",
+      "type": "2",
+      "symbol": "🌂",
+      "image": ""
+    },
+    "127769": {
+      "name": "月亮",
+      "type": "2",
+      "symbol": "🌙",
+      "image": ""
+    },
+    "127796": {
+      "name": "椰子树",
+      "type": "2",
+      "symbol": "🌴",
+      "image": ""
+    },
+    "127801": {
+      "name": "玫瑰",
+      "type": "2",
+      "symbol": "🌹",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🌹/png/🌹.png"
+    },
+    "127817": {
+      "name": "西瓜",
+      "type": "2",
+      "symbol": "🍉",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🍉/png/🍉.png"
+    },
+    "127818": {
+      "name": "橙子",
+      "type": "2",
+      "symbol": "🍊",
+      "image": ""
+    },
+    "127822": {
+      "name": "苹果",
+      "type": "2",
+      "symbol": "🍎",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🍎/png/🍎.png"
+    },
+    "127827": {
+      "name": "草莓",
+      "type": "2",
+      "symbol": "🍓",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🍓/png/🍓.png"
+    },
+    "127828": {
+      "name": "汉堡",
+      "type": "2",
+      "symbol": "🍔",
+      "image": ""
+    },
+    "127833": {
+      "name": "饭团",
+      "type": "2",
+      "symbol": "🍙",
+      "image": ""
+    },
+    "127834": {
+      "name": "米饭",
+      "type": "2",
+      "symbol": "🍚",
+      "image": ""
+    },
+    "127836": {
+      "name": "拉面",
+      "type": "2",
+      "symbol": "🍜",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🍜/png/🍜.png"
+    },
+    "127837": {
+      "name": "意面",
+      "type": "2",
+      "symbol": "🍝",
+      "image": ""
+    },
+    "127838": {
+      "name": "面包",
+      "type": "2",
+      "symbol": "🍞",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🍞/png/🍞.png"
+    },
+    "127839": {
+      "name": "薯条",
+      "type": "2",
+      "symbol": "🍟",
+      "image": ""
+    },
+    "127843": {
+      "name": "寿司",
+      "type": "2",
+      "symbol": "🍣",
+      "image": ""
+    },
+    "127847": {
+      "name": "刨冰",
+      "type": "2",
+      "symbol": "🍧",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🍧/png/🍧.png"
+    },
+    "127859": {
+      "name": "煎蛋",
+      "type": "2",
+      "symbol": "🍳",
+      "image": ""
+    },
+    "127864": {
+      "name": "高脚杯",
+      "type": "2",
+      "symbol": "🍸",
+      "image": ""
+    },
+    "127866": {
+      "name": "啤酒",
+      "type": "2",
+      "symbol": "🍺",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🍺/png/🍺.png"
+    },
+    "127867": {
+      "name": "干杯",
+      "type": "2",
+      "symbol": "🍻",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🍻/png/🍻.png"
+    },
+    "127872": {
+      "name": "蝴蝶结",
+      "type": "2",
+      "symbol": "🎀",
+      "image": ""
+    },
+    "127874": {
+      "name": "蛋糕",
+      "type": "2",
+      "symbol": "🎂",
+      "image": ""
+    },
+    "127876": {
+      "name": "圣诞树",
+      "type": "2",
+      "symbol": "🎄",
+      "image": ""
+    },
+    "127880": {
+      "name": "气球",
+      "type": "2",
+      "symbol": "🎈",
+      "image": ""
+    },
+    "127881": {
+      "name": "庆祝",
+      "type": "2",
+      "symbol": "🎉",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🎉/png/🎉.png"
+    },
+    "127908": {
+      "name": "话筒",
+      "type": "2",
+      "symbol": "🎤",
+      "image": ""
+    },
+    "127909": {
+      "name": "摄影机",
+      "type": "2",
+      "symbol": "🎥",
+      "image": ""
+    },
+    "127920": {
+      "name": "老虎机",
+      "type": "2",
+      "symbol": "🎰",
+      "image": ""
+    },
+    "127928": {
+      "name": "吉他",
+      "type": "2",
+      "symbol": "🎸",
+      "image": ""
+    },
+    "127942": {
+      "name": "奖杯",
+      "type": "2",
+      "symbol": "🏆",
+      "image": ""
+    },
+    "127968": {
+      "name": "家",
+      "type": "2",
+      "symbol": "🏠",
+      "image": ""
+    },
+    "127973": {
+      "name": "医院",
+      "type": "2",
+      "symbol": "🏥",
+      "image": ""
+    },
+    "127974": {
+      "name": "银行",
+      "type": "2",
+      "symbol": "🏦",
+      "image": ""
+    },
+    "127975": {
+      "name": "取款机",
+      "type": "2",
+      "symbol": "🏧",
+      "image": ""
+    },
+    "127976": {
+      "name": "酒店",
+      "type": "2",
+      "symbol": "🏨",
+      "image": ""
+    },
+    "127978": {
+      "name": "便利店",
+      "type": "2",
+      "symbol": "🏪",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🏪/png/🏪.png"
+    },
+    "128014": {
+      "name": "骑马",
+      "type": "2",
+      "symbol": "🐎",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🐎/png/🐎.png"
+    },
+    "128020": {
+      "name": "公鸡",
+      "type": "2",
+      "symbol": "🐔",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🐔/png/🐔.png"
+    },
+    "128025": {
+      "name": "章鱼",
+      "type": "2",
+      "symbol": "🐙",
+      "image": ""
+    },
+    "128026": {
+      "name": "海螺",
+      "type": "2",
+      "symbol": "🐚",
+      "image": ""
+    },
+    "128027": {
+      "name": "虫",
+      "type": "2",
+      "symbol": "🐛",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🐛/png/🐛.png"
+    },
+    "128032": {
+      "name": "鱼",
+      "type": "2",
+      "symbol": "🐠",
+      "image": ""
+    },
+    "128036": {
+      "name": "小鸡",
+      "type": "2",
+      "symbol": "🐤",
+      "image": ""
+    },
+    "128039": {
+      "name": "企鹅",
+      "type": "2",
+      "symbol": "🐧",
+      "image": ""
+    },
+    "128040": {
+      "name": "树懒",
+      "type": "2",
+      "symbol": "🐨",
+      "image": ""
+    },
+    "128045": {
+      "name": "老鼠",
+      "type": "2",
+      "symbol": "🐭",
+      "image": ""
+    },
+    "128046": {
+      "name": "牛",
+      "type": "2",
+      "symbol": "🐮",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🐮/png/🐮.png"
+    },
+    "128047": {
+      "name": "老虎",
+      "type": "2",
+      "symbol": "🐯",
+      "image": ""
+    },
+    "128051": {
+      "name": "鲸鱼",
+      "type": "2",
+      "symbol": "🐳",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🐳/png/🐳.png"
+    },
+    "128053": {
+      "name": "猴",
+      "type": "2",
+      "symbol": "🐵",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🐵/png/🐵.png"
+    },
+    "128054": {
+      "name": "狗",
+      "type": "2",
+      "symbol": "🐶",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🐶/png/🐶.png"
+    },
+    "128055": {
+      "name": "猪",
+      "type": "2",
+      "symbol": "🐷",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🐷/png/🐷.png"
+    },
+    "128056": {
+      "name": "青蛙",
+      "type": "2",
+      "symbol": "🐸",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🐸/png/🐸.png"
+    },
+    "128064": {
+      "name": "眼睛",
+      "type": "2",
+      "symbol": "👀",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/👀/png/👀.png"
+    },
+    "128066": {
+      "name": "耳朵",
+      "type": "2",
+      "symbol": "👂",
+      "image": ""
+    },
+    "128067": {
+      "name": "鼻子",
+      "type": "2",
+      "symbol": "👃",
+      "image": ""
+    },
+    "128068": {
+      "name": "嘴唇",
+      "type": "2",
+      "symbol": "👄",
+      "image": ""
+    },
+    "128070": {
+      "name": "向上",
+      "type": "2",
+      "symbol": "👆",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/👆/png/👆.png"
+    },
+    "128071": {
+      "name": "向下",
+      "type": "2",
+      "symbol": "👇",
+      "image": ""
+    },
+    "128072": {
+      "name": "向左",
+      "type": "2",
+      "symbol": "👈",
+      "image": ""
+    },
+    "128073": {
+      "name": "向右",
+      "type": "2",
+      "symbol": "👉",
+      "image": ""
+    },
+    "128074": {
+      "name": "拳头",
+      "type": "2",
+      "symbol": "👊",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/👊/png/👊.png"
+    },
+    "128076": {
+      "name": "好的",
+      "type": "2",
+      "symbol": "👌",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/👌/png/👌.png"
+    },
+    "128077": {
+      "name": "厉害",
+      "type": "2",
+      "symbol": "👍",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/👍/png/👍.png"
+    },
+    "128078": {
+      "name": "鄙视",
+      "type": "2",
+      "symbol": "👎",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/👎/png/👎.png"
+    },
+    "128079": {
+      "name": "鼓掌",
+      "type": "2",
+      "symbol": "👏",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/👏/png/👏.png"
+    },
+    "128081": {
+      "name": "皇冠",
+      "type": "2",
+      "symbol": "👑",
+      "image": ""
+    },
+    "128082": {
+      "name": "帽子",
+      "type": "2",
+      "symbol": "👒",
+      "image": ""
+    },
+    "128085": {
+      "name": "衣服",
+      "type": "2",
+      "symbol": "👕",
+      "image": ""
+    },
+    "128087": {
+      "name": "连衣裙",
+      "type": "2",
+      "symbol": "👗",
+      "image": ""
+    },
+    "128089": {
+      "name": "内衣",
+      "type": "2",
+      "symbol": "👙",
+      "image": ""
+    },
+    "128092": {
+      "name": "包",
+      "type": "2",
+      "symbol": "👜",
+      "image": ""
+    },
+    "128095": {
+      "name": "鞋子",
+      "type": "2",
+      "symbol": "👟",
+      "image": ""
+    },
+    "128096": {
+      "name": "高跟鞋",
+      "type": "2",
+      "symbol": "👠",
+      "image": ""
+    },
+    "128098": {
+      "name": "靴子",
+      "type": "2",
+      "symbol": "👢",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/👢/png/👢.png"
+    },
+    "128099": {
+      "name": "脚印",
+      "type": "2",
+      "symbol": "👣",
+      "image": ""
+    },
+    "128102": {
+      "name": "男孩",
+      "type": "2",
+      "symbol": "👦",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/👦/png/👦.png"
+    },
+    "128103": {
+      "name": "女孩",
+      "type": "2",
+      "symbol": "👧",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/👧/png/👧.png"
+    },
+    "128104": {
+      "name": "爸爸",
+      "type": "2",
+      "symbol": "👨",
+      "image": ""
+    },
+    "128105": {
+      "name": "妈妈",
+      "type": "2",
+      "symbol": "👩",
+      "image": ""
+    },
+    "128123": {
+      "name": "幽灵",
+      "type": "2",
+      "symbol": "👻",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/👻/png/👻.png"
+    },
+    "128124": {
+      "name": "天使",
+      "type": "2",
+      "symbol": "👼",
+      "image": ""
+    },
+    "128128": {
+      "name": "骷髅",
+      "type": "2",
+      "symbol": "💀",
+      "image": ""
+    },
+    "128132": {
+      "name": "口红",
+      "type": "2",
+      "symbol": "💄",
+      "image": ""
+    },
+    "128136": {
+      "name": "理发厅",
+      "type": "2",
+      "symbol": "💈",
+      "image": ""
+    },
+    "128137": {
+      "name": "打针",
+      "type": "2",
+      "symbol": "💉",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/💉/png/💉.png"
+    },
+    "128138": {
+      "name": "药丸",
+      "type": "2",
+      "symbol": "💊",
+      "image": ""
+    },
+    "128141": {
+      "name": "戒指",
+      "type": "2",
+      "symbol": "💍",
+      "image": ""
+    },
+    "128147": {
+      "name": "爱心",
+      "type": "2",
+      "symbol": "💓",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/💓/png/💓.png"
+    },
+    "128157": {
+      "name": "礼物",
+      "type": "2",
+      "symbol": "💝",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/💝/png/💝.png"
+    },
+    "128163": {
+      "name": "炸弹",
+      "type": "2",
+      "symbol": "💣",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/💣/png/💣.png"
+    },
+    "128164": {
+      "name": "睡觉",
+      "type": "2",
+      "symbol": "💤",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/💤/png/💤.png"
+    },
+    "128166": {
+      "name": "水",
+      "type": "2",
+      "symbol": "💦",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/💦/png/💦.png"
+    },
+    "128168": {
+      "name": "吹气",
+      "type": "2",
+      "symbol": "💨",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/💨/png/💨.png"
+    },
+    "128169": {
+      "name": "便便",
+      "type": "2",
+      "symbol": "💩",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/💩/png/💩.png"
+    },
+    "128170": {
+      "name": "肌肉",
+      "type": "2",
+      "symbol": "💪",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/💪/png/💪.png"
+    },
+    "128176": {
+      "name": "钱",
+      "type": "2",
+      "symbol": "💰",
+      "image": ""
+    },
+    "128187": {
+      "name": "电脑",
+      "type": "2",
+      "symbol": "💻",
+      "image": ""
+    },
+    "128191": {
+      "name": "光碟",
+      "type": "2",
+      "symbol": "💿",
+      "image": ""
+    },
+    "128224": {
+      "name": "传真",
+      "type": "2",
+      "symbol": "📠",
+      "image": ""
+    },
+    "128235": {
+      "name": "邮箱",
+      "type": "2",
+      "symbol": "📫",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/📫/png/📫.png"
+    },
+    "128241": {
+      "name": "手机",
+      "type": "2",
+      "symbol": "📱",
+      "image": ""
+    },
+    "128247": {
+      "name": "相机",
+      "type": "2",
+      "symbol": "📷",
+      "image": ""
+    },
+    "128273": {
+      "name": "钥匙",
+      "type": "2",
+      "symbol": "🔑",
+      "image": ""
+    },
+    "128274": {
+      "name": "锁",
+      "type": "2",
+      "symbol": "🔒",
+      "image": ""
+    },
+    "128276": {
+      "name": "铃铛",
+      "type": "2",
+      "symbol": "🔔",
+      "image": ""
+    },
+    "128293": {
+      "name": "火",
+      "type": "2",
+      "symbol": "🔥",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🔥/png/🔥.png"
+    },
+    "128299": {
+      "name": "手枪",
+      "type": "2",
+      "symbol": "🔫",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🔫/png/🔫.png"
+    },
+    "128513": {
+      "name": "呲牙",
+      "type": "2",
+      "symbol": "😁",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😁/png/😁.png"
+    },
+    "128514": {
+      "name": "激动",
+      "type": "2",
+      "symbol": "😂",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😂/png/😂.png"
+    },
+    "128516": {
+      "name": "高兴",
+      "type": "2",
+      "symbol": "😄",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😄/png/😄.png"
+    },
+    "128521": {
+      "name": "媚眼",
+      "type": "2",
+      "symbol": "😉",
+      "image": ""
+    },
+    "128522": {
+      "name": "嘿嘿",
+      "type": "2",
+      "symbol": "😊",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😊/png/😊.png"
+    },
+    "128524": {
+      "name": "羞涩",
+      "type": "2",
+      "symbol": "😌",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😌/png/😌.png"
+    },
+    "128525": {
+      "name": "花痴",
+      "type": "2",
+      "symbol": "😍",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😍/png/😍.png"
+    },
+    "128527": {
+      "name": "哼哼",
+      "type": "2",
+      "symbol": "😏",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😏/png/😏.png"
+    },
+    "128530": {
+      "name": "不屑",
+      "type": "2",
+      "symbol": "😒",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😒/png/😒.png"
+    },
+    "128531": {
+      "name": "汗",
+      "type": "2",
+      "symbol": "😓",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😓/png/😓.png"
+    },
+    "128532": {
+      "name": "失落",
+      "type": "2",
+      "symbol": "😔",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😔/png/😔.png"
+    },
+    "128536": {
+      "name": "飞吻",
+      "type": "2",
+      "symbol": "😘",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😘/png/😘.png"
+    },
+    "128538": {
+      "name": "亲亲",
+      "type": "2",
+      "symbol": "😚",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😚/png/😚.png"
+    },
+    "128540": {
+      "name": "淘气",
+      "type": "2",
+      "symbol": "😜",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😜/png/😜.png"
+    },
+    "128541": {
+      "name": "吐舌",
+      "type": "2",
+      "symbol": "😝",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😝/png/😝.png"
+    },
+    "128557": {
+      "name": "大哭",
+      "type": "2",
+      "symbol": "😭",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😭/png/😭.png"
+    },
+    "128560": {
+      "name": "紧张",
+      "type": "2",
+      "symbol": "😰",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😰/png/😰.png"
+    },
+    "128561": {
+      "name": "害怕",
+      "type": "2",
+      "symbol": "😱",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😱/png/😱.png"
+    },
+    "128563": {
+      "name": "瞪眼",
+      "type": "2",
+      "symbol": "😳",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/😳/png/😳.png"
+    },
+    "128591": {
+      "name": "合十",
+      "type": "2",
+      "symbol": "🙏",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🙏/png/🙏.png"
+    },
+    "128640": {
+      "name": "火箭",
+      "type": "2",
+      "symbol": "🚀",
+      "image": ""
+    },
+    "128644": {
+      "name": "列车",
+      "type": "2",
+      "symbol": "🚄",
+      "image": ""
+    },
+    "128652": {
+      "name": "公交",
+      "type": "2",
+      "symbol": "🚌",
+      "image": ""
+    },
+    "128663": {
+      "name": "汽车",
+      "type": "2",
+      "symbol": "🚗",
+      "image": ""
+    },
+    "128676": {
+      "name": "快艇",
+      "type": "2",
+      "symbol": "🚤",
+      "image": ""
+    },
+    "128677": {
+      "name": "信号灯",
+      "type": "2",
+      "symbol": "🚥",
+      "image": ""
+    },
+    "128679": {
+      "name": "路障",
+      "type": "2",
+      "symbol": "🚧",
+      "image": ""
+    },
+    "128684": {
+      "name": "吸烟",
+      "type": "2",
+      "symbol": "🚬",
+      "image": "https://koishi.js.org/QFace/assets/qq_emoji/🚬/png/🚬.png"
+    },
+    "128690": {
+      "name": "自行车",
+      "type": "2",
+      "symbol": "🚲",
+      "image": ""
+    },
+    "128697": {
+      "name": "男性",
+      "type": "2",
+      "symbol": "🚹",
+      "image": ""
+    },
+    "128698": {
+      "name": "女性",
+      "type": "2",
+      "symbol": "🚺",
+      "image": ""
+    },
+    "128701": {
+      "name": "马桶",
+      "type": "2",
+      "symbol": "🚽",
+      "image": ""
+    },
+    "128704": {
+      "name": "浴缸",
+      "type": "2",
+      "symbol": "🛀",
+      "image": ""
+    }
+  }
+}

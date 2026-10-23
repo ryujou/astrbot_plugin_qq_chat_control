@@ -155,3 +155,16 @@ dialog section { margin: 22px 0; } dialog section h3 { margin-bottom: 10px; }
   .dialog-head h2 { font-size: 17px; } td, th { padding: 12px; } .reply-text { min-width: 190px; } .reply-time { display: none; }
 }
 @media (prefers-reduced-motion: no-preference) { button { transition: background .12s, color .12s, border-color .12s; } }
+.reaction-filters label { display: grid; gap: 6px; font-size: 12px; }
+.reaction-status { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0; }
+.reaction-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; margin: 18px 0; }
+.reaction-heading { display: flex; align-items: center; gap: 12px; }
+.reaction-heading h3 { margin: 0 0 5px; }
+.reaction-icon { display: inline-flex; width: 34px; height: 34px; object-fit: contain; align-items: center; justify-content: center; flex-shrink: 0; font-size: 28px; vertical-align: middle; }
+.reaction-record { margin: 16px 0; overflow-wrap: anywhere; }
+.reaction-record blockquote { margin: 14px 0; padding: 10px 16px; border-left: 3px solid var(--line); white-space: pre-wrap; }
+.section-title { margin: 22px 0 12px; font-size: 17px; }
+.reaction-bars { margin-top: 18px; }
+.reaction-bars > div { display: grid; grid-template-columns: 92px 1fr 28px; gap: 8px; align-items: center; margin: 8px 0; font-size: 12px; }
+.reaction-bars meter { width: 100%; accent-color: #5b8c73; }
+.reaction-priors p { line-height: 1.8; }

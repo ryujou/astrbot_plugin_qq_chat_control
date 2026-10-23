@@ -11,6 +11,9 @@ const causes = {fact:'事实',understanding:'理解',expression:'表达',sticker
 const purposes = {reply:'回复生成',scene:'场景判断',feedback:'反馈判断',feedback_recheck:'Codex复核',review:'经验整理',slang:'黑话学习',sticker_choose:'选图判断',sticker_describe:'图片理解',group_expressions:'场景表达提炼',candidate_generate:'候选生成',candidate_review:'候选评审',candidate_freshness:'语境复查'};
 const phases = {candidate:'三候选择优',baseline:'原策略',adaptive:'学习策略',requested:'主动索取表情包',scene_failed:'场景判断降级'};
 let groups = [], current = null, tab = 'overview', page = 1, query = '', filter = '', generation = 0, detailGeneration = 0;
+let reactionDays = 7, reactionEmoji = '', reactionCategory = '', reactionView = 'summary';
+const reactionStates = {pending:'待分类',classified:'已分类',uncertain:'不确定',missing:'缺少原文',failed:'失败',expired:'已淘汰',ignored:'已撤销或仅机器人',active:'已确认',suspended:'暂停',judging:'判断中',sending:'发送中',sent:'已送达',unknown:'发送结果未知',cancelled:'已取消',skipped:'已跳过'};
+Object.assign(purposes, {reaction_decide:'语义贴表情',reaction_classify:'回应分类',reaction_patterns:'回应用法提炼',reaction_feedback:'回应效果判断'});
 
 async function api(endpoint, params = {}) {
   const result = await bridge.apiGet('learning/' + endpoint, params);
@@ -46,6 +49,7 @@ function renderHeader() {
 }
 async function choose(group) {
   current = group; page = 1; query = ''; filter = '';
+  reactionEmoji='';reactionCategory='';
   if ($('detail').open) $('detail').close();
   renderGroups(); renderHeader(); await load();
 }
@@ -111,11 +115,27 @@ function slang(data) {
 function members(data) {
   return toolbar() + `<p class="section-note">画像来自本群已保存的聊天资料。关系值只影响角色语气，与回复互动分和工具权限无关。</p><br>` + (data.items.length?`<div class="member-grid">${data.items.map(item=>`<article class="panel member"><h3>${escape(item.name)}</h3><div class="member-id">QQ ${escape(item.user_id)}</div><p class="member-profile">${escape(item.profile||'尚未形成画像，正在积累发言。')}</p><div class="member-foot"><span>关系值 ${num(item.affinity)} / 100</span><span>${item.pending_samples} 条待总结</span></div><small>最近总结：${date(item.last_update)}<br>最近发言：${date(item.last_seen)}</small></article>`).join('')}</div>`:empty('还没有成员画像','本群开启画像后，需要积累有效文字发言。这里不推测尚未观察到的成员信息。')) + pager(data);
 }
+function reactionIcon(emoji) {
+  return emoji?.symbol ? `<span class="reaction-icon" aria-hidden="true">${escape(emoji.symbol)}</span>` : emoji?.image ? `<img class="reaction-icon" src="${escape(emoji.image)}" alt="${escape(emoji.name)}" loading="lazy" referrerpolicy="no-referrer">` : '<span class="reaction-icon">?</span>';
+}
+function reactions(data) {
+  const options=(items,value)=>items.map(([id,label])=>`<option value="${escape(id)}" ${String(value)===String(id)?'selected':''}>${escape(label)}</option>`).join('');
+  const controls=`<div class="toolbar reaction-filters"><label>统计范围<select id="reactionDays">${options([[7,'最近七天'],[30,'最近三十天']],reactionDays)}</select></label><label>表情<select id="reactionEmoji">${options([['','全部表情'],...data.emojis.map(e=>[e.emoji_id,e.emoji.name+' · '+e.emoji_id])],reactionEmoji)}</select></label><label>内容类别<select id="reactionCategory">${options([['','全部类别'],...data.categories.map(c=>[c,c])],reactionCategory)}</select></label><label>查看<select id="reactionView">${options([['summary','用法与分布'],['evidence','观察证据'],['actions','机器人动作']],reactionView)}</select></label></div>`;
+  const counts=['pending','classified','uncertain','missing','failed'].map(k=>badge(`${reactionStates[k]} ${data.counts[k]||0}`)).join(' ');
+  const header=`<p class="section-note">感知学习${data.enabled?'已开启':'已停用'} · 智能发送${data.auto_enabled?'已开启':'已停用'} · 判断间隔至少 ${data.interval} 秒，滚动十分钟最多 ${data.maximum} 次。跟贴次数不等于喜欢程度，未知身份不计入可核实人数。</p><div class="reaction-status">${counts} ${badge('累计淘汰 '+(data.meta.dropped||0))}</div><p class="section-note">最近分类 ${date(data.meta.classified_at)} · 最近提炼 ${date(data.meta.summarized_at)}${data.meta.last_error?' · '+escape(data.meta.last_error):''}</p>`;
+  if(reactionView==='actions')return controls+header+`<h2 class="section-title">机器人动作</h2><p class="section-note">外部插件动作单列记录，不计入智能发送额度，也不作为真人偏好。</p>`+(data.actions.items.length?data.actions.items.map(a=>`<article class="panel reaction-record"><div class="reaction-heading">${reactionIcon(a.emoji)}<div><h3>${escape(a.emoji?.name||'未选择表情')} ${a.emoji_id?'<small>#'+escape(a.emoji_id)+'</small>':''}</h3><small>${date(a.created)} · ${a.source==='external'?'原有插件':'语义判断'} · ${reactionStates[a.status]||escape(a.status)} · ${num(a.seconds)} 秒</small></div></div><p>${escape(a.reason)}</p>${a.details?.target?`<blockquote>${escape(a.details.target.text||'图片消息')}</blockquote>`:''}<p class="section-note">目标 ${escape(a.message_id||'未选择')} · 参考用法 ${escape(a.details?.used_pattern_ids?.join('、')||'默认先验 / 未采用群内用法')} · 判断截至 ${escape(a.details?.validated_through||'—')}<br>后续反馈：${a.source==='external'?'仅记录动作':outcomes[a.outcome]||(a.status==='sent'?'观察中':'未形成效果证据')}</p>${(a.feedback||[]).map(f=>`<p>${badge(intents[f.intent]||f.intent)} ${escape(f.evidence_text)} <small>${escape(f.reason)}</small></p>`).join('')}</article>`).join(''):empty('还没有机器人回应动作','有新消息、满足频率并判断适合时，才会智能贴表情。'))+pager(data.actions);
+  if(reactionView==='evidence')return controls+header+`<h2 class="section-title">回应观察证据</h2>`+(data.items.length?data.items.map(r=>`<article class="panel reaction-record"><div class="reaction-heading">${reactionIcon(r.emoji)}<div><h3>${escape(r.emoji.name)} <small>#${escape(r.emoji_id)}</small></h3><small>${date(r.updated)} · ${reactionStates[r.status]||escape(r.status)} · 当前 ${r.count} 个回应</small></div></div><blockquote>${escape(r.text||'缺少可理解原文，不推测内容类别')}</blockquote><p>${(r.categories||[]).map(c=>badge(c)).join(' ')} ${escape(r.meaning)}</p><p class="section-note">${escape(r.reason||r.error||'等待积累与分类')}<br>可核实真人 ${r.actors.length} 人 · ${r.actors.length?'QQ '+escape(r.actors.join('、')):'身份未知'}${r.participants.length?' · 平台标识 '+r.participants.length+' 个（不能等同 QQ 人数）':''} · 机器人回应 ${r.bot_count}<br>消息 ${escape(r.message_id)} · 来源 ${date(r.source_ts)}</p><details><summary>附近语境与适用边界</summary><p>${escape(r.boundary||'尚未提炼')}</p>${r.context.map(m=>`<p class="section-note">${escape(m.text)}</p>`).join('')}${r.image_descriptions.map(t=>`<p>${escape(t)}</p>`).join('')}</details></article>`).join(''):empty('等待回应证据','收到真人贴表情后积累；筛选无匹配时也会显示为空。'))+pager(data);
+  const emojis=data.emojis.filter(e=>(!reactionEmoji||e.emoji_id===reactionEmoji)&&(!reactionCategory||e.categories[reactionCategory]));
+  const cards=emojis.map(e=>`<article class="panel"><div class="reaction-heading">${reactionIcon(e.emoji)}<div><h3>${escape(e.emoji.name)} <small>#${escape(e.emoji_id)}</small></h3><small>${e.messages} 条被回应消息 · 可核实 ${e.verified_people} 人</small></div></div><div class="reaction-bars">${Object.entries(e.categories).map(([c,n])=>`<div><span>${escape(c)}</span><meter min="0" max="${e.messages}" value="${n}"></meter><span>${n}</span></div>`).join('')}</div><p class="section-note">最近使用 ${date(e.last_used)} · ${e.unknown_messages} 条尚无可核实操作者</p></article>`).join('');
+  const patterns=data.patterns.items.map(p=>`<article class="panel reaction-record"><div class="reaction-heading">${reactionIcon(p.emoji)}<div><h3>${escape(p.emoji.name)} · ${escape(p.meaning)}</h3>${badge(p.status==='pending'?'待验证':reactionStates[p.status],p.status==='active')} <small>${escape(p.id)}</small></div></div><p>场景：${escape(p.scene)}</p><p>边界：${escape(p.boundary)}</p><details><summary>${p.evidence.length} 条必要证据</summary>${p.evidence.map(e=>`<blockquote>${escape(e.text)}<br><small>${date(e.source_ts)} · ${e.actors.length?'可核实 QQ '+escape(e.actors.join('、')):'身份未知'} · 消息 ${escape(e.message_id)}</small></blockquote>`).join('')}</details></article>`).join('');
+  return controls+header+`<h2 class="section-title">真人常用表情与内容分布</h2>`+(cards?`<div class="reaction-grid">${cards}</div>`:empty('等待本群回应数据','默认示例不会计入真人使用统计。'))+`<h2 class="section-title">本群用法</h2>`+(patterns||empty('尚未形成可展示的群内用法','至少两名可核实真人、两个五分钟片段支持才会确认，单人刷屏不算群共识。'))+`<details class="panel"><summary>默认先验 · 不是本群已确认偏好</summary><div class="reaction-priors">${data.patterns.priors.map(p=>`<p>${reactionIcon(p.emoji)} <strong>${escape(p.emoji.name)} #${p.id}</strong> ${escape(p.meaning)}</p>`).join('')}</div></details>`;
+}
 async function load() {
   if(!current) return;
   const token=++generation, params={...scope(),page,q:query};
   if(tab==='replies') params.outcome=filter;
   if(tab==='stickers') params.status=filter;
+  if(tab==='reactions')Object.assign(params,{days:reactionDays,emoji:reactionEmoji,category:reactionCategory});
   $('error').hidden=true; $('content').setAttribute('aria-busy','true');
   $('content').innerHTML=empty('正在读取本群资料…');
   document.querySelectorAll('[data-tab]').forEach(button=>{
@@ -123,9 +143,10 @@ async function load() {
     if(button.dataset.tab===tab) button.setAttribute('aria-current','page'); else button.removeAttribute('aria-current');
   });
   try {
-    const selectedTab=tab, data=await api(tab,params);
+    const selectedTab=tab;
+    const data=selectedTab==='reactions'?await Promise.all([api('reactions',params),api('reaction_patterns',params),api('reaction_actions',params)]).then(([d,patterns,actions])=>({...d,patterns,actions})):await api(tab,params);
     if(token!==generation) return;
-    $('content').innerHTML=({overview,replies,stickers,slang,members,background,choices})[selectedTab](data);
+    $('content').innerHTML=({overview,replies,stickers,slang,members,background,choices,reactions})[selectedTab](data);
     $('updated').textContent='更新于 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});
     if(selectedTab==='stickers') loadImages(token,params);
   } catch(error) {if(token===generation){showError(error);$('content').innerHTML=empty('资料读取失败','请点击右上角刷新重试。');}}
@@ -177,6 +198,9 @@ document.addEventListener('submit',async event=>{
   query=$('itemSearch').value.trim();filter=$('itemFilter')?.value||'';page=1;await load();
 });
 document.addEventListener('change',async event=>{
+  if(['reactionDays','reactionEmoji','reactionCategory','reactionView'].includes(event.target.id)){
+    reactionDays=Number($('reactionDays').value);reactionEmoji=$('reactionEmoji').value;reactionCategory=$('reactionCategory').value;reactionView=$('reactionView').value;page=1;await load();return;
+  }
   if(event.target.id==='itemFilter'){filter=event.target.value;query=$('itemSearch').value.trim();page=1;await load();}
 });
 $('groupSearch').addEventListener('input',renderGroups);

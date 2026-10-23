@@ -179,6 +179,9 @@ class GroupPolicy:
         reply_id = event.get_extra('qq_feedback_reply')
         if reply_id is None:
             return False
+        reactions = self.learning.reactions.context(scope)
+        if reactions:
+            request.system_prompt = (request.system_prompt or '') + '\n近期QQ回应表情，仅作为语境数据，不凭名称或数量判断赞同或反感：' + json.dumps(reactions, ensure_ascii=False)
         if (event.get_extra('qq_chat_automatic') and self.owner.rules[scope].get('candidate_replies', True)
                 and not self.baseline(scope, time.time())):
             return await self.interaction.prepare(event, request)

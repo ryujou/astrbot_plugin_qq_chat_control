@@ -33,7 +33,7 @@ class PublicConfigTests(unittest.IsolatedAsyncioTestCase):
         owner = NS(rules={('qq','10001'): {'persona_id':'demo'}},
             config={'feedback_recheck_provider_id':'my-codex'}, provider=Mock(return_value=provider),
             limits=NS(successful=lambda response: bool(response.completion_text)))
-        learning = NS(owner=owner, path=Path('unused.db'), record_call=Mock())
+        learning = NS(owner=owner, path=Path('unused.db'), record_call=Mock(), expressions=NS(generations={}))
         policy = GroupPolicy(learning)
         await policy.judge(('qq','10001'), 'test', {}, recheck=True)
         owner.provider.assert_called_once_with('my-codex')

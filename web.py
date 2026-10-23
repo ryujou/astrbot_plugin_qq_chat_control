@@ -17,7 +17,8 @@ class LearningWeb:
         self.owner = owner
 
     def register(self):
-        for name in ('bootstrap', 'overview', 'replies', 'reply', 'stickers', 'image', 'slang', 'members', 'background', 'choices'):
+        for name in ('bootstrap', 'overview', 'replies', 'reply', 'stickers', 'image', 'slang', 'members', 'background', 'choices',
+                     'reactions', 'reaction_patterns', 'reaction_actions'):
             handler = getattr(self, name)
 
             async def view(handler=handler):
@@ -45,6 +46,23 @@ class LearningWeb:
         if page < 1:
             raise ValueError('页码必须大于0')
         return page, 20, (page - 1) * 20
+
+    def reaction_args(self):
+        days = int(request.args.get('days', '7'))
+        if days not in (7, 30):
+            raise ValueError('统计范围须为7天或30天')
+        return self.scope()[:2], days, self.page()[0]
+
+    async def reactions(self):
+        scope, days, page = self.reaction_args()
+        return self.owner.learning.reactions.observations(scope, days, request.args.get('emoji', ''), request.args.get('category', ''), page)
+
+    async def reaction_patterns(self):
+        return self.owner.learning.reactions.pattern_snapshot(self.scope()[:2], request.args.get('emoji', ''), request.args.get('category', ''))
+
+    async def reaction_actions(self):
+        scope, days, page = self.reaction_args()
+        return self.owner.learning.reactions.action_snapshot(scope, days, page, request.args.get('emoji', ''), request.args.get('category', ''))
 
     @property
     def db(self):
@@ -92,6 +110,8 @@ class LearningWeb:
                 allowed=allowed, persona=rule.get('persona_id', ''), provider=rule.get('provider_id', ''),
                 mode=rule.get('feedback_adapt_mode', '关闭'), feedback=bool(rule.get('feedback_observe')),
                 slang=bool(rule.get('slang_learning')), stickers=bool(rule.get('sticker_learning')),
+                reaction_observe=self.owner.learning.reactions.enabled((platform, group_id)),
+                reaction_auto=self.owner.learning.reactions.enabled((platform, group_id), 'reaction_auto'),
                 profiles=bool(rule.get('member_profiles'))))
         return dict(groups=groups, accounts=accounts, connection_errors=connection_errors, updated=time.time())
 

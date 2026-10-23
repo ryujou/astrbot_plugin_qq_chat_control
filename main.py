@@ -123,6 +123,9 @@ class QQChatControl(Star):
                     or int(rule.get('knowledge_document_mb', 20)) < 1 or int(rule.get('knowledge_image_mb', 10)) < 1):
                 self.validation_error = '整活尺度须为0到100，资料大小上限须为正整数'
                 continue
+            if int(rule.get('reaction_interval_seconds', 120)) < 120 or not 1 <= int(rule.get('reaction_max_per_10min', 2)) <= 2:
+                self.validation_error = '智能回应间隔至少120秒，滚动十分钟上限须为1或2次'
+                continue
             self.rules[key] = dict(rule)
         self.idle_states = {}
         self.tasks = set()
@@ -218,6 +221,8 @@ class QQChatControl(Star):
         if self.idle_states.get(key) is not state:
             return
         event = copy(state['event'])
+        self.learning.reactions.cancel(key)
+        self.learning.policy.interaction.foreground.setdefault(key, set()).add(id(event))
         event._extras = {'qq_chat_automatic': True, 'qq_candidate_started': monotonic()}
         usage_token = current_message.set(None)
         try:
@@ -258,6 +263,7 @@ class QQChatControl(Star):
             logger.exception('冷场发言失败：平台=%s 群=%s', *key)
         finally:
             current_message.reset(usage_token)
+            self.learning.policy.interaction.finish_foreground(event)
 
     def admin_allowed(self, event):
         return (str(event.get_sender_id()) in {str(v) for v in self.context.get_config().get('admins_id', [])}
@@ -325,8 +331,13 @@ class QQChatControl(Star):
             event.should_call_llm(True)
             raise
         event.set_extra('qq_chat_automatic', False)
+        if self.learning.reactions.observe_notice(event):
+            event.set_extra('qq_reaction_notice', True)
+            event.should_call_llm(True)
+            return
         self.profiles.observe(event)
         self.learning.observe(event)
+        self.learning.reactions.note_message(event)
         self.learning.policy.interaction.observe(event)
         event.should_call_llm(not self.chat_allowed(event))
         handlers = event.get_extra('activated_handlers', [])
@@ -353,13 +364,14 @@ class QQChatControl(Star):
         if not self.learning.opportunities.take(event, rule, blocked=self.learning.policy.interaction.foreground_busy(key)):
             return
         event.set_extra('qq_chat_automatic', True)
+        self.learning.reactions.cancel(key)
         event.set_extra('qq_candidate_started', monotonic())
         event.is_at_or_wake_command = True
         event.should_call_llm(False)
 
     @filter.event_message_type(filter.EventMessageType.ALL, priority=-200)
     async def prepare(self, event):
-        if event.get_platform_name() != 'aiocqhttp' or event.is_stopped():
+        if event.get_platform_name() != 'aiocqhttp' or event.is_stopped() or event.get_extra('qq_reaction_notice'):
             return
         await self.ensure_ready()
         provider_id = self.provider_id(event)
@@ -390,6 +402,15 @@ class QQChatControl(Star):
                     raise
         if str(event.get_group_id()) in self.config.get('allowed_group_ids', []):
             await self.memory.prune_group(event, policy(self.config, self.rule(event)))
+
+    @filter.event_message_type(filter.EventMessageType.GROUP_MESSAGE, priority=-300)
+    async def semantic_reaction(self, event):
+        if (event.get_platform_name() == 'aiocqhttp' and not event.is_stopped()
+                and not event.get_extra('qq_chat_automatic') and not event.get_extra('qq_suppress_auto')
+                and not event.get_extra('qq_reaction_notice')
+                and str(event.get_sender_id()) not in {str(event.get_self_id()), *map(str, self.rule(event).get('feedback_bot_ids', []))}
+                and ordinary_message(event, self.context.get_config(event.unified_msg_origin))):
+            self.learning.reactions.schedule(event)
 
     @filter.on_llm_request(priority=-1000)
     async def temporary_group_context(self, event, req):

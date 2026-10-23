@@ -68,6 +68,7 @@ class GroupInteraction:
     def start_foreground(self, event):
         scope = event.get_platform_id(), str(event.get_group_id())
         self.foreground.setdefault(scope, set()).add(id(event))
+        self.learning.reactions.cancel(scope)
         self.cancel(scope, '直接问答或任务优先')
 
     def finish_foreground(self, event):
@@ -93,6 +94,7 @@ class GroupInteraction:
         text = event.get_message_str().strip()
         if re.match(r'^(?:/stop(?:\s|$)|(?:别说了|别发了|不要再说了|停止回复|停止插话|别刷屏)(?:[，。！!\s]|$))', text):
             event.set_extra('qq_suppress_auto', True)
+            self.learning.reactions.cancel((event.get_platform_id(), str(event.get_group_id())), '收到明确停止要求', stop=True)
             self.cancel((event.get_platform_id(), str(event.get_group_id())), '收到明确停止要求')
 
     @property
@@ -147,6 +149,7 @@ class GroupInteraction:
         lessons = [x for x in self.policy.state(scope)['lessons'] if x.get('status') != 'suspended'
                    and any(clue in text for clue in x.get('clues', []))][:3]
         payload = dict(messages=initial, background=background, expressions=background.get('expressions', []),
+                       emoji_reactions=self.learning.reactions.context(scope),
                        intensity=intensity, stickers=pool, recent=recent, lessons=lessons, persona=request.system_prompt)
         record['sources'] = background
         started = time.monotonic()
