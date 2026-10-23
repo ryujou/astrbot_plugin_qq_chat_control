@@ -80,10 +80,12 @@ class ChatGuard(CustomFilter):
         if not owner or event.get_platform_name() != 'aiocqhttp':
             return True
         rule = owner.rule(event)
-        if owner.closing or (rule.get('auto_only') and not ordinary_message(event, cfg)):
+        if owner.closing:
             event.is_at_or_wake_command = False
             event.should_call_llm(True)
             event.stop_event()
+        elif rule.get('auto_only'):
+            event.should_call_llm(True)
         if event.is_at_or_wake_command and command_name(event, cfg) in LLM_COMMAND_NAMES and not owner.admin_allowed(event):
             event.is_at_or_wake_command = False
             event.should_call_llm(True)
@@ -304,10 +306,7 @@ class QQChatControl(Star):
         if event.get_platform_name() != 'aiocqhttp':
             return
         if self.rule(event).get('auto_only'):
-            allowed = {(__name__, 'guard'), (__name__, 'admit'), (__name__, 'auto_reply'), (__name__, 'prepare'),
-                       ('data.plugins.astrbot_plugin_completely_disable.main','on_all_message')}
-            handlers = event.get_extra('activated_handlers', [])
-            handlers[:] = [h for h in handlers if (h.handler_module_path,h.handler_name) in allowed]
+            event.should_call_llm(True)
 
     @filter.event_message_type(filter.EventMessageType.ALL, priority=1000)
     async def admit(self, event):

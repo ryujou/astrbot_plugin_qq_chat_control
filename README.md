@@ -6,7 +6,7 @@
 
 AstrBot 完整插件 · 回复反馈 · 群内黑话 · 表情包 · 权限与人设
 
-[![Version](https://img.shields.io/badge/version-1.12.0-4f46e5?style=flat-square)](metadata.yaml)
+[![Version](https://img.shields.io/badge/version-1.12.1-4f46e5?style=flat-square)](metadata.yaml)
 [![AstrBot](https://img.shields.io/badge/AstrBot-%E2%89%A54.28%20%3C5-2563eb?style=flat-square)](https://github.com/AstrBotDevs/AstrBot)
 [![Platform](https://img.shields.io/badge/platform-QQ%20%2F%20OneBot-0891b2?style=flat-square)](#运行环境)
 [![License](https://img.shields.io/badge/license-MIT-16a34a?style=flat-square)](LICENSE)
@@ -159,7 +159,7 @@ python -m pip install -r data/plugins/astrbot_plugin_qq_chat_control/requirement
 | `member_limit_hours` / `member_limit_count` | 默认每 5 小时 5 次；从成员首次获准请求计时 |
 | `codex_provider_id` | 可选的 Codex 扩展关联，普通 Provider 可留空 |
 
-超管身份使用 AstrBot 原生 `admins_id`。超管也需要目标群在允许列表内；群内 `auto_only` 规则会限制主动命令。非白名单成员默认可在允许群中限额聊天，关闭群规则的 `member_limit_enabled` 后仅白名单可主动调用模型。
+超管身份使用 AstrBot 原生 `admins_id`。超管也需要目标群在允许列表内；群内 `auto_only` 关闭直接聊天模型回复，其他插件命令仍按各自权限响应。非白名单成员默认可在允许群中限额聊天，关闭群规则的 `member_limit_enabled` 后仅白名单可主动调用模型。
 
 自动搭话不扣个人次数。后台反馈判断、经验整理等也不扣成员次数，但会产生模型调用成本。
 
