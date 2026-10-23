@@ -308,6 +308,7 @@ class GroupReactions:
                 messages = self.messages(scope)
                 targets = [dict(m, image_descriptions=self.learning.policy.stickers.descriptions(*scope, m['message_id']))
                     for m in messages if m['ts'] >= time.time()-120 and not self.already_reacted(scope, m['message_id'])
+                    and not self.owner.profiles.blocked(scope, m['sender'])
                     and not self.db.execute('SELECT 1 FROM replies WHERE platform=? AND group_id=? AND trigger_id=? AND sent IS NOT NULL', (*scope, m['message_id'])).fetchone()]
                 if not targets:
                     self.finish_action(action_id, 'skipped', '没有近期可回应的消息')
@@ -343,6 +344,7 @@ class GroupReactions:
                 with self.db:
                     self.db.execute('UPDATE reaction_actions SET message_id=?,emoji_id=?,details=? WHERE id=?', (mid, eid, encoded(decision), action_id))
                 if (not self.current(scope, persona, generation, 'reaction_auto') or self.busy(scope)
+                        or self.owner.profiles.blocked(scope, decision['target']['sender'])
                         or self.blocked.get(scope, 0) > time.time() or self.already_reacted(scope, mid)
                         or self.at_capacity(scope) or decision['target']['ts'] < time.time()-120):
                     self.finish_action(action_id, 'cancelled', '权限、前台任务或目标状态已变化', decision)
@@ -353,6 +355,7 @@ class GroupReactions:
                     self.finish_action(action_id, 'cancelled', '目标消息不存在或不属于当前群', decision)
                     return
                 if (self.busy(scope) or self.already_reacted(scope, mid) or not self.current(scope, persona, generation, 'reaction_auto')
+                        or self.owner.profiles.blocked(scope, decision['target']['sender'])
                         or self.blocked.get(scope, 0)>time.time() or self.at_capacity(scope) or decision['target']['ts']<time.time()-120):
                     self.finish_action(action_id, 'cancelled', '发送前状态已变化', decision)
                     return

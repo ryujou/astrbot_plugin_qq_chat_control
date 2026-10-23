@@ -17,6 +17,7 @@ from astrbot.core.agent.run_context import ContextWrapper
 from astrbot_plugin_qq_chat_control.learning import FeedbackLearning
 from astrbot_plugin_qq_chat_control.tools import bind_tools
 from astrbot_plugin_qq_chat_control.web import LearningWeb
+from astrbot_plugin_qq_chat_control.profiles import MemberProfiles
 
 
 class WebTests(unittest.IsolatedAsyncioTestCase):
@@ -26,6 +27,7 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.rules = {('qq_private', group): dict(persona_id='同人设', feedback_observe=True) for group in ['a', 'b']}
         self.owner = NS(closing=False, rules=self.rules, config={'allowed_group_ids':['a','b']},
                         profiles=NS(records={}), context=NS(platform_manager=NS(platform_insts=[])))
+        self.owner.profiles = MemberProfiles(self.owner, Path(self.tmp.name) / 'members.json')
         self.owner.learning = FeedbackLearning(self.owner, Path(self.tmp.name)/'learning.db')
         self.db = self.owner.learning.open()
         self.addCleanup(self.owner.learning.close)

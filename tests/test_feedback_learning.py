@@ -1,3 +1,4 @@
+import asyncio
 import json
 import sqlite3
 import tempfile
@@ -16,6 +17,8 @@ from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import Aioc
 from astrbot_plugin_qq_chat_control.learning import FeedbackLearning
 from astrbot_plugin_qq_chat_control.limits import current_message
 from astrbot_plugin_qq_chat_control.output import QuietOutput
+from astrbot_plugin_qq_chat_control.profiles import MemberProfiles
+from astrbot_plugin_qq_chat_control import profiles as profiles_module
 
 
 class Event:
@@ -47,6 +50,7 @@ class FeedbackTests(unittest.IsolatedAsyncioTestCase):
             context=NS(get_config=lambda _: {'wake_prefix': ['/']}), tasks=set(),
             rule=lambda event: self.owner.rules.get((event.get_platform_id(), event.get_group_id()), {}),
             provider=lambda _: self.provider, limits=NS(successful=lambda result: bool(result.completion_text)))
+        self.owner.profiles = MemberProfiles(self.owner, Path(self.tmp.name) / 'members.json')
         self.learning = FeedbackLearning(self.owner, self.path)
         native_observe = self.learning.observe
 
@@ -65,6 +69,25 @@ class FeedbackTests(unittest.IsolatedAsyncioTestCase):
         self.learning.sent(event, outgoing, [{'type': 'text', 'data': {'text': '这段进副歌确实舒服'}}], now=ts)
         self.learning.finish(event)
         return event
+
+    async def test_low_affinity_cancels_inflight_send_before_platform_call(self):
+        self.rule['member_profiles'] = True
+        self.owner.profiles.records['qq_private:10006:alice'] = dict(affinity=19, affinity_recovery_at=1000)
+        event = Event('pending')
+        original = AsyncMock(return_value={'message_id': 'sent'})
+        with patch.object(CQHttp, 'call_action', original), patch.object(profiles_module, 'time', return_value=1000):
+            self.learning.install()
+            token = current_message.set(NS(event=event))
+            try:
+                for action, params in [('send_group_msg', dict(group_id='10006', message=[])),
+                                       ('set_msg_emoji_like', dict(message_id='pending', emoji_id='424', set=True))]:
+                    with self.assertRaises(asyncio.CancelledError):
+                        await CQHttp.call_action(object(), action, **params)
+                self.assertTrue(event.get_extra('qq_auto_cancelled'))
+                original.assert_not_awaited()
+            finally:
+                current_message.reset(token)
+                self.learning.close()
 
     def prepare(self, event):
         token = current_message.set(NS(event=event))

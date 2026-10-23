@@ -54,6 +54,25 @@ class ReactionTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(self.r.active)
         self.assertFalse(self.learning.db.execute('SELECT 1 FROM outgoing').fetchone())
 
+    async def test_silenced_target_excluded_and_rechecked_before_send(self):
+        event = self.setup_reactions()
+        self.rules[self.scope]['member_profiles'] = True
+        record = dict(affinity=19, affinity_recovery_at=time.time())
+        self.owner.profiles.records['qq_private:10006:alice'] = record
+        await self.r.decide(self.scope, event)
+        self.policy.judge.assert_not_awaited()
+        self.client.call_action.assert_not_awaited()
+        self.assertEqual(self.actions()[0]['status'], 'skipped')
+        record['affinity'] = 20
+        self.decision(event)
+        async def lower_during_lookup(action, **params):
+            record['affinity'] = 19
+            return dict(group_id='10006')
+        self.client.call_action.side_effect = lower_during_lookup
+        await self.r.decide(self.scope, event)
+        self.assertEqual(self.actions()[0]['status'], 'cancelled')
+        self.assertEqual([c.args[0] for c in self.client.call_action.call_args_list], ['get_msg'])
+
     async def test_repeated_notice_withdrawal_unknown_and_bots(self):
         self.setup_reactions()
         self.notice(); self.notice()

@@ -79,7 +79,7 @@ class ChatGuard(CustomFilter):
         if not owner or event.get_platform_name() != 'aiocqhttp':
             return True
         rule = owner.rule(event)
-        if owner.closing:
+        if owner.closing or owner.profiles.is_blocked(event):
             event.is_at_or_wake_command = False
             event.should_call_llm(True)
             event.stop_event()
@@ -218,7 +218,7 @@ class QQChatControl(Star):
             task.add_done_callback(self.tasks.discard)
 
     async def send_idle_reply(self, key, state):
-        if self.idle_states.get(key) is not state:
+        if self.idle_states.get(key) is not state or self.profiles.is_blocked(state['event']):
             return
         event = copy(state['event'])
         self.learning.reactions.cancel(key)
@@ -249,7 +249,7 @@ class QQChatControl(Star):
             await self.bind_request(event, request)
             response = await self.provider(self.provider_id(event)).text_chat(
                 prompt=request.prompt, contexts=history, system_prompt=persona['prompt'] + self.profiles.context(event, group=True))
-            if self.idle_states.get(key) is not state or self.closing:
+            if self.idle_states.get(key) is not state or self.closing or self.profiles.is_blocked(event):
                 return
             if not self.limits.successful(response):
                 raise RuntimeError('冷场发言未生成有效文字')
@@ -271,7 +271,7 @@ class QQChatControl(Star):
             and (not event.get_group_id() or str(event.get_group_id()) in self.config.get('allowed_group_ids', [])))
 
     def chat_allowed(self, event):
-        return (not self.rule(event).get('auto_only')
+        return (not self.profiles.is_blocked(event) and not self.rule(event).get('auto_only')
             and (str(event.get_sender_id()) in self.config.get('allowed_qq_ids', [])
                  or bool(event.get_group_id()) and self.rule(event).get('member_limit_enabled', True))
             and (not event.get_group_id() or str(event.get_group_id()) in self.config.get('allowed_group_ids', [])))
@@ -319,6 +319,11 @@ class QQChatControl(Star):
     @filter.event_message_type(filter.EventMessageType.ALL, priority=1000)
     async def admit(self, event):
         if event.get_platform_name() != 'aiocqhttp':
+            return
+        if self.profiles.is_blocked(event):
+            event.is_at_or_wake_command = False
+            event.should_call_llm(True)
+            event.stop_event()
             return
         self.track_idle_message(event)
         task = asyncio.current_task()
@@ -494,8 +499,9 @@ class QQChatControl(Star):
         event.stop_event()
         event.should_call_llm(True)
         if self.profiles.enabled(event):
-            answer = self.profiles.command(event, '').split('\n', 1)[0]
-            await event.send(event.plain_result(answer).use_t2i(False))
+            answer = self.profiles.command(event, '')
+            if answer:
+                await event.send(event.plain_result(answer.split('\n', 1)[0]).use_t2i(False))
 
     @filter.command('额度', alias={'剩余额度','codex额度'})
     async def quota(self, event):

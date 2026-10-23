@@ -286,6 +286,10 @@ class FeedbackLearning:
         async def call(bot, action, **params):
             usage = current_message.get()
             event = usage.event if usage else None
+            if (event is not None and action in {'send_group_msg', 'set_msg_emoji_like'}
+                    and self.owner.profiles.is_blocked(event)):
+                event.set_extra('qq_auto_cancelled', '成员好感低于20，静默等待恢复')
+                raise asyncio.CancelledError('成员低好感静默')
             reaction_id = self.reactions.external_start(event, params) if event is not None and action == 'set_msg_emoji_like' else None
             capture = (event is not None and action == 'send_group_msg' and self.enabled(event)
                        and str(params.get('group_id')) == str(event.get_group_id())

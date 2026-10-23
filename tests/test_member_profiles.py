@@ -33,12 +33,14 @@ class Event:
     def get_sender_name(self): return '阿明'
     def get_self_id(self): return 'bot'
     def get_messages(self): return self.parts
+    def get_message_str(self): return self.text
     def get_extra(self, key, default=None): return self._extras.get(key, default)
     def set_extra(self, key, value): self._extras[key] = value
     def request_llm(self, **kwargs): return SimpleNamespace(func_tool=None, system_prompt='', **kwargs)
     def plain_result(self, text): return SimpleNamespace(use_t2i=lambda enabled: text)
     def should_call_llm(self, disabled): self.disabled = disabled
     def stop_event(self): self.stopped = True
+    def is_stopped(self): return getattr(self, 'stopped', False)
     async def send(self, text): self.sent.append(text)
 
 
@@ -238,6 +240,100 @@ class MemberProfileTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn(self.controller.profiles.key(event), self.controller.profiles.records)
         self.assertIn(self.controller.profiles.key(other), self.controller.profiles.records)
         self.chat.assert_not_awaited()
+
+    async def test_recovery_boundaries_cap_and_high_scores(self):
+        record = dict(affinity=18, affinity_recovery_at=1000)
+        value = profiles_module.affinity_value
+        for elapsed, expected in [(0, 18), (10799, 18), (10800, 19), (21600, 20), (345600, 50), (999999, 50)]:
+            self.assertEqual(value(record, 1000 + elapsed), expected)
+        self.assertEqual(value(record, 999), 18)
+        self.assertEqual(value(dict(record, affinity=80), 999999), 80)
+        self.assertEqual(record['affinity'], 18)
+
+    async def test_legacy_scores_start_now_and_reload_keeps_recovery(self):
+        profiles = self.controller.profiles
+        profiles.records['qq_private:group:member'] = dict(name='成员', profile='', affinity=18,
+            samples=[], last_update=1, last_seen=1)
+        profiles.save()
+        with patch.object(profiles_module, 'time', return_value=1000):
+            migrated = control.MemberProfiles(self.controller, profiles.path)
+            self.assertEqual(profiles_module.affinity_value(migrated.records['qq_private:group:member']), 18)
+        with patch.object(profiles_module, 'time', return_value=22600):
+            restored = control.MemberProfiles(self.controller, profiles.path)
+            record = restored.records['qq_private:group:member']
+            self.assertEqual(record['affinity_recovery_at'], 1000)
+            self.assertEqual(profiles_module.affinity_value(record), 20)
+            self.assertFalse(restored.blocked(('qq_private', 'group'), 'member'))
+
+    async def test_silence_scope_commands_and_automatic_count(self):
+        self.controller.closing = False
+        profiles = self.controller.profiles
+        event = self.observe()
+        profiles.record(event).update(affinity=19, affinity_recovery_at=1000)
+        self.controller.learning.opportunities = SimpleNamespace(take=Mock())
+        with patch.object(profiles_module, 'time', return_value=1000), patch.object(control.ChatGuard, 'owner', self.controller):
+            for text in ('@bot 你好', '/jrlp', '/画像 删除', '/好感'):
+                event = Event(text=text)
+                control.ChatGuard().filter(event, {'wake_prefix': ['/']})
+                self.assertTrue(event.is_stopped())
+                self.assertTrue(event.disabled)
+                await self.controller.auto_reply(event)
+            self.controller.learning.opportunities.take.assert_not_called()
+            self.assertFalse(self.controller.chat_allowed(event))
+            self.assertIsNone(profiles.command(event, '删除'))
+            await self.controller.member_affinity(event)
+            self.assertEqual(event.sent, [])
+            self.assertIn(profiles.key(event), profiles.records)
+            for other in (Event(sender='other'), Event(group='other'), Event(platform='second'),
+                          Event(group='work'), Event(group=''), Event(post_type='notice')):
+                self.assertFalse(profiles.is_blocked(other))
+            self.controller.rules[('qq_private', 'group')]['member_profiles'] = False
+            self.assertFalse(profiles.is_blocked(event))
+            self.controller.rules[('qq_private', 'group')]['member_profiles'] = True
+        with patch.object(profiles_module, 'time', return_value=11800):
+            self.assertTrue(self.controller.chat_allowed(Event()))
+
+    async def test_silenced_message_does_not_collect_or_reset_timer(self):
+        event = self.observe()
+        record = self.controller.profiles.record(event)
+        record.update(affinity=19, affinity_recovery_at=1000)
+        before = json.dumps(record)
+        self.controller.ensure_ready = AsyncMock()
+        self.controller.track_idle_message = Mock()
+        with patch.object(profiles_module, 'time', return_value=5000):
+            await self.controller.admit(event)
+        self.assertTrue(event.is_stopped())
+        self.assertEqual(json.dumps(record), before)
+        self.controller.ensure_ready.assert_not_awaited()
+        self.controller.track_idle_message.assert_not_called()
+
+    async def test_zero_assessment_preserves_clock_and_new_delta_uses_recovered_score(self):
+        event = Event(text='你算错了')
+        event.parts.insert(0, control.At(qq='bot'))
+        self.controller.profiles.observe(event)
+        record = self.controller.profiles.record(event)
+        record.update(affinity=30, affinity_recovery_at=1000)
+        self.chat.return_value.completion_text = assessment(delta=0, quote=event.text)
+        await self.update(11800)
+        self.assertEqual(record['affinity_recovery_at'], 1000)
+        self.assertEqual(profiles_module.affinity_value(record, 11800), 31)
+        self.controller.profiles.observe(event)
+        self.chat.return_value.completion_text = assessment(delta=-10, quote=event.text)
+        await self.update(22600)
+        self.assertEqual(record['affinity'], 22)
+        self.assertEqual(record['affinity_recovery_at'], 22600)
+        self.assertEqual(profiles_module.affinity_value(record, 33400), 23)
+
+    async def test_dashboard_shows_effective_score_and_release_time(self):
+        event = self.observe()
+        self.controller.profiles.record(event).update(affinity=18, affinity_recovery_at=1000)
+        web = control.LearningWeb(self.controller)
+        with patch.object(profiles_module, 'time', return_value=11800):
+            item = web.members_for(('qq_private', 'group'))[0]
+            self.assertEqual((item['affinity'], item['silenced'], item['silence_until']), (19, True, 22600))
+        with patch.object(profiles_module, 'time', return_value=22600):
+            item = web.members_for(('qq_private', 'group'))[0]
+            self.assertEqual((item['affinity'], item['silenced'], item['silence_until']), (20, False, None))
 
     async def test_native_command_parser_accepts_empty_and_multiword(self):
         command = object.__new__(CommandFilter)

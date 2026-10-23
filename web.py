@@ -7,6 +7,7 @@ from pathlib import Path
 from quart import jsonify, request
 
 from .evaluation import comparison
+from .profiles import affinity_value, AFFINITY_RECOVERY_SECONDS, AFFINITY_SILENCE_THRESHOLD
 
 from astrbot.api import logger
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_platform_adapter import AiocqhttpAdapter
@@ -70,10 +71,18 @@ class LearningWeb:
 
     def members_for(self, scope):
         prefix = ':'.join(scope[:2]) + ':'
-        return [dict(user_id=key[len(prefix):], name=value['name'], profile=value['profile'],
-                     affinity=value['affinity'], last_update=value['last_update'], last_seen=value['last_seen'],
-                     pending_samples=len(value['samples']))
-                for key, value in self.owner.profiles.records.items() if key.startswith(prefix)]
+        items = []
+        for key, value in self.owner.profiles.records.items():
+            if not key.startswith(prefix):
+                continue
+            sender = key[len(prefix):]
+            silenced = self.owner.profiles.blocked(scope[:2], sender)
+            until = (value['affinity_recovery_at'] + (AFFINITY_SILENCE_THRESHOLD - value['affinity'])
+                     * AFFINITY_RECOVERY_SECONDS) if silenced else None
+            items.append(dict(user_id=sender, name=value['name'], profile=value['profile'],
+                affinity=affinity_value(value), silenced=silenced, silence_until=until,
+                last_update=value['last_update'], last_seen=value['last_seen'], pending_samples=len(value['samples'])))
+        return items
 
     def terms_for(self, scope):
         items = []

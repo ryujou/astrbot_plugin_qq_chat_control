@@ -21,6 +21,7 @@ from astrbot.core.provider.entities import LLMResponse
 from astrbot_plugin_qq_chat_control.learning import FeedbackLearning
 from astrbot_plugin_qq_chat_control.limits import LLMLimits, MessageUsage, ChatLimitExceeded, current_message
 from astrbot_plugin_qq_chat_control.strategy import DIM
+from astrbot_plugin_qq_chat_control.profiles import MemberProfiles
 from test_feedback_learning import Event
 
 
@@ -42,6 +43,7 @@ class AdaptationTests(unittest.IsolatedAsyncioTestCase):
                        conversation_manager=NS(update_conversation=AsyncMock())),
             rule=lambda event: self.rules.get((event.get_platform_id(), event.get_group_id()), {}),
             provider=lambda name: self.judge)
+        self.owner.profiles = MemberProfiles(self.owner, Path(self.tmp.name) / 'members.json')
         self.owner.limits = LLMLimits(self.owner, Path(self.tmp.name) / 'limits.json')
         self.learning = FeedbackLearning(self.owner, Path(self.tmp.name) / 'learning.db')
         self.owner.learning = self.learning
@@ -342,7 +344,7 @@ class AdaptationTests(unittest.IsolatedAsyncioTestCase):
         async def stream(**kwargs):
             yield await provider.text_chat(**kwargs)
         provider.text_chat_stream = stream
-        self.owner.profiles = NS(inject=lambda e, kw: kw, replied=Mock())
+        self.owner.profiles.inject, self.owner.profiles.replied = lambda e, kw: kw, Mock()
         self.owner.limits.wrap_provider(provider)
         with self.bound(event):
             responses = [r async for r in provider.text_chat_stream(prompt='test', system_prompt='基础人设')]
@@ -589,7 +591,7 @@ class AdaptationTests(unittest.IsolatedAsyncioTestCase):
     async def test_reply_stream_records_one_call_and_unknown_tokens(self):
         event=self.event()
         await self.choose(event)
-        self.owner.profiles=NS(inject=lambda e,kw:kw,replied=Mock())
+        self.owner.profiles.inject, self.owner.profiles.replied = lambda e, kw: kw, Mock()
         async def stream(**kwargs):
             yield LLMResponse(role='assistant',completion_text='完成')
         provider=NS(text_chat=AsyncMock(),text_chat_stream=stream,provider_config={'id':'test'})
