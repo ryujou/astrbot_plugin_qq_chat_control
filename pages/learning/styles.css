@@ -168,3 +168,24 @@ dialog section { margin: 22px 0; } dialog section h3 { margin-bottom: 10px; }
 .reaction-bars > div { display: grid; grid-template-columns: 92px 1fr 28px; gap: 8px; align-items: center; margin: 8px 0; font-size: 12px; }
 .reaction-bars meter { width: 100%; accent-color: #5b8c73; }
 .reaction-priors p { line-height: 1.8; }
+.settings-switch { display: flex; gap: 10px; margin-bottom: 14px; }
+.settings-switch [aria-pressed=true] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.settings-intro, .settings-fixed { max-width: 75ch; margin-bottom: 24px; }
+#settingsForm { max-width: 1000px; }
+.settings-section { border-top: 1px solid var(--line); padding: 20px 0; }
+.settings-section summary { cursor: pointer; font-size: 16px; font-weight: 600; padding: 4px 0; }
+.setting-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, .8fr); gap: 28px; padding: 18px 0; }
+.setting-row > div > label { display: block; font-weight: 550; margin-bottom: 5px; }
+.setting-row .section-note { overflow-wrap: anywhere; }
+.setting-control input:not([type=checkbox]), .setting-control select, .setting-control textarea { width: 100%; }
+.setting-control textarea { resize: vertical; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.setting-check { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; }
+.setting-check input { width: 18px; height: 18px; min-height: 0; accent-color: var(--accent); }
+.settings-save { position: sticky; bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; background: var(--bg); border-top: 1px solid var(--line); }
+.settings-save [role=status] { font-size: 13px; color: var(--muted); }
+.settings-save .button { background: var(--accent); color: var(--surface); border-color: var(--accent); flex-shrink: 0; }
+.settings-section summary:focus-visible, .setting-control textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+@media (max-width: 700px) {
+  .setting-row { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 16px 0; }
+  .settings-save { gap: 12px; }
+}

@@ -8,6 +8,7 @@ from quart import jsonify, request
 
 from .evaluation import comparison
 from .profiles import affinity_value, AFFINITY_RECOVERY_SECONDS, AFFINITY_SILENCE_THRESHOLD
+from .web_settings import WebSettings
 
 from astrbot.api import logger
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_platform_adapter import AiocqhttpAdapter
@@ -16,11 +17,12 @@ from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_platform_adapter import A
 class LearningWeb:
     def __init__(self, owner):
         self.owner = owner
+        self.settings = WebSettings(owner)
 
     def register(self):
         for name in ('bootstrap', 'overview', 'replies', 'reply', 'stickers', 'image', 'slang', 'members', 'background', 'choices',
-                     'reactions', 'reaction_patterns', 'reaction_actions'):
-            handler = getattr(self, name)
+                     'reactions', 'reaction_patterns', 'reaction_actions', 'settings', 'save_settings'):
+            handler = self.settings.get if name == 'settings' else self.settings.save if name == 'save_settings' else getattr(self, name)
 
             async def view(handler=handler):
                 try:
@@ -30,11 +32,11 @@ class LearningWeb:
                 except FileNotFoundError:
                     return jsonify(ok=False, message='图片文件已不存在'), 404
                 except Exception:
-                    logger.exception('群聊学习看板读取失败')
-                    return jsonify(ok=False, message='读取失败，请查看 AstrBot 日志'), 500
+                    logger.exception('群聊学习看板请求失败')
+                    return jsonify(ok=False, message='请求失败，请查看 AstrBot 日志'), 500
 
             self.owner.context.register_web_api('/astrbot_plugin_qq_chat_control/learning/' + name,
-                                                view, ['GET'], '群聊学习看板：' + name)
+                                                view, ['POST'] if name == 'save_settings' else ['GET'], '群聊学习看板：' + name)
 
     def scope(self):
         key = request.args.get('platform', ''), request.args.get('group_id', '')

@@ -1,3 +1,5 @@
+import {settings, settingsChanged, leaveSettings, saveSettings} from './settings.js';
+
 const bridge = window.AstrBotPluginPage;
 const $ = id => document.getElementById(id);
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -12,6 +14,7 @@ const purposes = {reply:'回复生成',scene:'场景判断',feedback:'反馈判�
 const phases = {candidate:'三候选择优',baseline:'原策略',adaptive:'学习策略',requested:'主动索取表情包',scene_failed:'场景判断降级'};
 let groups = [], current = null, tab = 'overview', page = 1, query = '', filter = '', generation = 0, detailGeneration = 0;
 let reactionDays = 7, reactionEmoji = '', reactionCategory = '', reactionView = 'summary';
+let settingsArea = 'group';
 const reactionStates = {pending:'待分类',classified:'已分类',uncertain:'不确定',missing:'缺少原文',failed:'失败',expired:'已淘汰',ignored:'已撤销或仅机器人',active:'已确认',suspended:'暂停',judging:'判断中',sending:'发送中',sent:'已送达',unknown:'发送结果未知',cancelled:'已取消',skipped:'已跳过'};
 Object.assign(purposes, {reaction_decide:'语义贴表情',reaction_classify:'回应分类',reaction_patterns:'回应用法提炼',reaction_feedback:'回应效果判断'});
 
@@ -131,8 +134,10 @@ function reactions(data) {
   return controls+header+`<h2 class="section-title">真人常用表情与内容分布</h2>`+(cards?`<div class="reaction-grid">${cards}</div>`:empty('等待本群回应数据','默认示例不会计入真人使用统计。'))+`<h2 class="section-title">本群用法</h2>`+(patterns||empty('尚未形成可展示的群内用法','至少两名可核实真人、两个五分钟片段支持才会确认，单人刷屏不算群共识。'))+`<details class="panel"><summary>默认先验 · 不是本群已确认偏好</summary><div class="reaction-priors">${data.patterns.priors.map(p=>`<p>${reactionIcon(p.emoji)} <strong>${escape(p.emoji.name)} #${p.id}</strong> ${escape(p.meaning)}</p>`).join('')}</div></details>`;
 }
 async function load() {
-  if(!current) return;
-  const token=++generation, params={...scope(),page,q:query};
+  if(!current && tab!=='settings') return;
+  if(!current) settingsArea='global';
+  const token=++generation, params={...(current?scope():{}),page,q:query};
+  if(tab==='settings') params.area=settingsArea;
   if(tab==='replies') params.outcome=filter;
   if(tab==='stickers') params.status=filter;
   if(tab==='reactions')Object.assign(params,{days:reactionDays,emoji:reactionEmoji,category:reactionCategory});
@@ -146,7 +151,8 @@ async function load() {
     const selectedTab=tab;
     const data=selectedTab==='reactions'?await Promise.all([api('reactions',params),api('reaction_patterns',params),api('reaction_actions',params)]).then(([d,patterns,actions])=>({...d,patterns,actions})):await api(tab,params);
     if(token!==generation) return;
-    $('content').innerHTML=({overview,replies,stickers,slang,members,background,choices,reactions})[selectedTab](data);
+    $('content').innerHTML=({overview,replies,stickers,slang,members,background,choices,reactions,settings})[selectedTab](data);
+    if(selectedTab==='settings'&&!current)document.querySelector('[data-settings-area="group"]').disabled=true;
     $('updated').textContent='更新于 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});
     if(selectedTab==='stickers') loadImages(token,params);
   } catch(error) {if(token===generation){showError(error);$('content').innerHTML=empty('资料读取失败','请点击右上角刷新重试。');}}
@@ -183,28 +189,37 @@ async function refresh() {
     const selected=groups.find(g=>current&&g.platform===current.platform&&g.group_id===current.group_id)
       ||groups.find(g=>g.allowed&&g.feedback)||groups.find(g=>g.allowed)||groups[0];
     if(selected){current=selected;renderGroups();renderHeader();await load();}
-    else{$('groupTitle').textContent='尚未配置群聊';$('content').innerHTML=empty('先配置一个群','在 QQ 聊天控制的群规则中添加要查看的群聊。');$('content').setAttribute('aria-busy','false');}
+    else{$('groupTitle').textContent='尚未配置群聊';if(tab==='settings')await load();else{$('content').innerHTML=empty('先配置一个群','在 QQ 聊天控制的群规则中添加要查看的群聊。');$('content').setAttribute('aria-busy','false');}}
   } catch(error){showError(error);} finally{$('refresh').disabled=false;}
 }
 document.addEventListener('click',async event=>{
   const button=event.target.closest('button');if(!button)return;
+  if((button.dataset.group||button.dataset.tab||button.dataset.openTab||button.dataset.settingsArea)&&!leaveSettings())return;
+  if(button.dataset.settingsArea){settingsArea=button.dataset.settingsArea;await load();return;}
   if(button.dataset.group){const group=groups.find(g=>g.platform+':'+g.group_id===button.dataset.group);if(group)await choose(group);}
   else if(button.dataset.tab||button.dataset.openTab){tab=button.dataset.tab||button.dataset.openTab;query='';filter='';page=1;await load();}
   else if(button.dataset.reply)await detail(button.dataset.reply);
   else if(button.dataset.page){page=Number(button.dataset.page);await load();}
 });
 document.addEventListener('submit',async event=>{
+  if(event.target.id==='settingsForm'){
+    event.preventDefault();$('error').hidden=true;
+    try{if(await saveSettings(bridge,current?scope():{}))await refresh();}catch(error){showError(error);}
+    return;
+  }
   if(event.target.id!=='searchForm')return;event.preventDefault();
   query=$('itemSearch').value.trim();filter=$('itemFilter')?.value||'';page=1;await load();
 });
 document.addEventListener('change',async event=>{
+  if(event.target.closest('#settingsForm')){settingsChanged();return;}
   if(['reactionDays','reactionEmoji','reactionCategory','reactionView'].includes(event.target.id)){
     reactionDays=Number($('reactionDays').value);reactionEmoji=$('reactionEmoji').value;reactionCategory=$('reactionCategory').value;reactionView=$('reactionView').value;page=1;await load();return;
   }
   if(event.target.id==='itemFilter'){filter=event.target.value;query=$('itemSearch').value.trim();page=1;await load();}
 });
 $('groupSearch').addEventListener('input',renderGroups);
-$('refresh').addEventListener('click',refresh);
+document.addEventListener('input',event=>{if(event.target.closest('#settingsForm'))settingsChanged();});
+$('refresh').addEventListener('click',()=>{if(leaveSettings())refresh();});
 $('closeDetail').addEventListener('click',()=>$('detail').close());
 async function init(){
   try {

@@ -181,7 +181,7 @@
             "type": "string",
             "default": "",
             "_special": "select_provider",
-            "hint": "留空使用本群聊天模型；理解表情包需要图片输入能力。判断调用不消耗群成员额度，不开放执行工具。"
+            "hint": "用于反馈、动态经验、表情包和智能贴QQ回应表情的日常判断。留空使用本群聊天模型；理解图片需要图片输入能力。判断调用不消耗群成员额度，不开放执行工具。"
           },
           "group_background": {"description": "学习群名、公告和群习惯", "type": "bool", "default": true},
           "group_file_learning": {"description": "学习符合限制的群文件", "type": "bool", "default": true},
