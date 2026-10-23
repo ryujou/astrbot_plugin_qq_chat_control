@@ -3,3 +3,8 @@ json-repair
 numpy
 Pillow
 quart
+
+pypdf
+python-docx
+openpyxl
+aiohttp

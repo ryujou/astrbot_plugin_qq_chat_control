@@ -17,7 +17,7 @@ class LearningWeb:
         self.owner = owner
 
     def register(self):
-        for name in ('bootstrap', 'overview', 'replies', 'reply', 'stickers', 'image', 'slang', 'members'):
+        for name in ('bootstrap', 'overview', 'replies', 'reply', 'stickers', 'image', 'slang', 'members', 'background', 'choices'):
             handler = getattr(self, name)
 
             async def view(handler=handler):
@@ -166,6 +166,27 @@ class LearningWeb:
             'FROM feedback f LEFT JOIN messages m ON m.platform=f.platform AND m.group_id=f.group_id AND m.message_id=f.message_id '
             'WHERE f.platform=? AND f.group_id=? AND f.reply_id=? ORDER BY m.ts', (*scope[:2], reply_id))]
         return result
+
+    async def background(self):
+        scope = self.scope()[:2]
+        background = self.owner.learning.background
+        db = background.db
+        page, size, offset = self.page()
+        rows = [dict(r) for r in db.execute('SELECT source_id,kind,name,status,reason,cursor FROM group_sources WHERE platform=? AND group_id=? ORDER BY kind,name LIMIT ? OFFSET ?', (*scope, size, offset))]
+        counts = dict(db.execute('SELECT status,COUNT(*) FROM group_sources WHERE platform=? AND group_id=? GROUP BY status', scope).fetchall())
+        return dict(state=background.state(scope), worker=dict(stage=background.stage, enabled=background.enabled(scope), scheduled=background.task is not None, running=background.task is not None and not background.task.done(), active_replies=sum(not t.done() for t in self.owner.limits.tasks)), intensity=self.owner.rules[scope].get('banter_intensity', 30),
+                    items=rows, counts=counts, total=sum(counts.values()), page=page, page_size=size)
+
+    async def choices(self):
+        scope = self.scope()[:2]
+        db = self.owner.learning.policy.interaction.db
+        page, size, offset = self.page()
+        rows = [dict(r) for r in db.execute('SELECT * FROM interaction_choices WHERE platform=? AND group_id=? ORDER BY created DESC LIMIT ? OFFSET ?', (*scope, size, offset))]
+        for row in rows:
+            row['candidates'] = json.loads(row['candidates'])
+            row['sources'] = json.loads(row['sources'])
+        total = db.execute('SELECT COUNT(*) FROM interaction_choices WHERE platform=? AND group_id=?', scope).fetchone()[0]
+        return dict(items=rows, total=total, page=page, page_size=size)
 
     async def stickers(self):
         scope = self.scope()

@@ -30,6 +30,7 @@ class AdaptationTests(unittest.IsolatedAsyncioTestCase):
         self.addCleanup(self.tmp.cleanup)
         self.rules = {('qq_private', group): dict(persona_id='同一个人设', feedback_observe=True,
                        slang_learning=False, feedback_adapt_mode='学习', sticker_learning=True,
+                       group_background=False, candidate_replies=False,
                        feedback_judge_provider_id='judge') for group in ['10006', '10003']}
         self.embedding = NS(get_embedding=AsyncMock(return_value=[1., 0.]))
         self.judge = NS(text_chat=AsyncMock(return_value=LLMResponse(role='assistant', completion_text='{"items":[]}')),

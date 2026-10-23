@@ -9,7 +9,7 @@ const imageStates = {ready:'可用',pending:'待理解',rejected:'已排除',fai
 const intents = {positive:'相关接话',annoyance:'明确反感',correction:'纠错',unknown:'不确定',neutral:'中性'};
 const causes = {fact:'事实',understanding:'理解',expression:'表达',sticker:'配图',unknown:'原因未知'};
 const purposes = {reply:'回复生成',scene:'场景判断',feedback:'反馈判断',feedback_recheck:'Codex复核',review:'经验整理',slang:'黑话学习',sticker_choose:'选图判断',sticker_describe:'图片理解'};
-const phases = {baseline:'原策略',adaptive:'学习策略',requested:'主动索取表情包',scene_failed:'场景判断降级'};
+const phases = {candidate:'三候选择优',baseline:'原策略',adaptive:'学习策略',requested:'主动索取表情包',scene_failed:'场景判断降级'};
 let groups = [], current = null, tab = 'overview', page = 1, query = '', filter = '', generation = 0, detailGeneration = 0;
 
 async function api(endpoint, params = {}) {
@@ -51,6 +51,14 @@ async function choose(group) {
 }
 function metric(label, value, note) { return `<div><div class="metric-label">${label}</div><div class="metric-value">${value}</div><div class="metric-note">${note}</div></div>`; }
 function replyLinks(ids) { return ids.map(id => `<button class="link-button" data-reply="${id}">回复 #${id}</button>`).join(' · '); }
+function background(data) {
+  const s=data.state, states={ready:'已读',pending:'待处理',excluded:'已排除',failed:'失败'};
+  return `<section class="panel"><h2>${escape(s.name||'尚未读取群名')}</h2><p>${data.worker?.active_replies?"等待前台回复结束":data.worker?.running?"后台处理中":"等待下一次扫描"} · 整活尺度上限 ${num(data.intensity)} · 公告同步 ${date(s.synced)}</p><p class="message-body">${escape(s.summary||'群背景尚待总结')}</p><small>摘要来源：${escape((s.sources||[]).join('、'))}</small>${Object.entries(s.errors||{}).map(([k,v])=>`<p class="notice error">${escape(k)}：${escape(v)}（保留上次资料）</p>`).join('')}<h3>群公告</h3>${(s.notices||[]).map(n=>`<article class="lesson"><small>${date(n.published)} · ${n.pinned==null?'置顶未知':n.pinned?'置顶':'非置顶'}</small><p class="message-body">${escape(n.text)}</p></article>`).join('')||'<p>尚无已读取的公告</p>'}<h3>群习惯与证据</h3>${(s.habits||[]).map(h=>`<article class="lesson"><p>${escape(h.text)}</p><small>${escape(h.evidence.map(e=>e.text).join(' / '))}</small></article>`).join('')||'<p>证据尚不足</p>'}</section><section class="panel"><h2>群文件与相册背景</h2><p>${Object.entries(data.counts).map(([k,v])=>`${states[k]||escape(k)} ${v}`).join(' · ')||'尚未建立目录'}</p><p class="section-note">视频、音频和超限资料直接排除；相册图片不进入表情包池。</p><ul class="mini-list">${data.items.map(i=>`<li><div>${escape(i.name)}<small class="reply-meta">${i.kind==='file'?'群文件':'相册'} · ${escape(i.reason||'')} · 已处理片段 ${i.cursor}</small></div>${badge(states[i.status]||i.status,i.status==='ready')}</li>`).join('')}</ul></section>`+pager(data);
+}
+function choices(data) {
+  return (data.items.map(r=>`<section class="panel"><div class="section-head"><h2>${escape(r.reason)}</h2><small>${date(r.created)} · ${num(r.seconds)} 秒</small></div>${r.candidates.map(c=>`<article class="lesson"><h3>候选 ${c.id}${r.selected===c.id?' · 已选中':''}</h3><p class="message-body">${escape(c.text)}</p><small>${escape(c.style)} · 尺度 ${num(c.intensity)} · 评审 ${num(c.score)} · ${escape(c.review?.reason||'尚未完成评审')}</small></article>`).join('')||'<p>未形成完整候选</p>'}<small>知识来源：${escape((r.sources.sources||[]).map(s=>s.name+' #'+s.position).join('、')||'群背景与聊天')}</small></section>`).join('')||empty('还没有候选择优记录'))+pager(data);
+}
+
 function overview(data) {
   const r = data.replies;
   const lessons = data.lessons.map(item => `<article class="lesson"><h3>${escape(item.scene)}${item.status==='suspended'?' · 暂停使用，待自动复核':''}</h3><p>${escape(item.advice)}</p><small>依据：${replyLinks(item.reply_ids)}</small></article>`).join('');
@@ -107,7 +115,7 @@ async function load() {
   try {
     const selectedTab=tab, data=await api(tab,params);
     if(token!==generation) return;
-    $('content').innerHTML=({overview,replies,stickers,slang,members})[selectedTab](data);
+    $('content').innerHTML=({overview,replies,stickers,slang,members,background,choices})[selectedTab](data);
     $('updated').textContent='更新于 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});
     if(selectedTab==='stickers') loadImages(token,params);
   } catch(error) {if(token===generation){showError(error);$('content').innerHTML=empty('资料读取失败','请点击右上角刷新重试。');}}

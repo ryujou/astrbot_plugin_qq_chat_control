@@ -20,7 +20,7 @@ def comparison(learning, scope, now=None):
         'FROM replies r JOIN reply_actions a ON a.reply_id=r.id AND a.platform=r.platform '
         'AND a.group_id=r.group_id AND a.persona=r.persona '
         'WHERE r.platform=? AND r.group_id=? AND r.persona=? AND r.created>=? ORDER BY COALESCE(r.sent,r.created),r.id', (*scope, since))]
-    buckets = {phase: [] for phase in ('baseline', 'adaptive', 'requested', 'scene_failed')}
+    buckets = {phase: [] for phase in ('baseline', 'adaptive', 'requested', 'scene_failed', 'candidate')}
     previous = []
     pairs = defaultdict(lambda: defaultdict(list))
     causes = defaultdict(int)

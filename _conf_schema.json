@@ -183,6 +183,13 @@
             "_special": "select_provider",
             "hint": "留空使用本群聊天模型；理解表情包需要图片输入能力。判断调用不消耗群成员额度，不开放执行工具。"
           },
+          "group_background": {"description": "学习群名、公告和群习惯", "type": "bool", "default": true},
+          "group_file_learning": {"description": "学习符合限制的群文件", "type": "bool", "default": true},
+          "group_album_learning": {"description": "学习群相册背景（不转发表情包）", "type": "bool", "default": true},
+          "candidate_replies": {"description": "主动插话生成三条候选并择优", "type": "bool", "default": true},
+          "banter_intensity": {"description": "本群整活尺度上限（0–100）", "type": "int", "default": 30, "hint": "模型只能自动收敛。0–20轻玩梗，21–40吐槽，41–60明显反串，61–80强反串，81–100放开调侃；明确停止时收手。"},
+          "knowledge_document_mb": {"description": "资料文档大小上限（MiB）", "type": "int", "default": 20},
+          "knowledge_image_mb": {"description": "资料图片大小上限（MiB）", "type": "int", "default": 10, "hint": "图片同时限制2000万像素；视频音频无论大小都不读取。"},
           "feedback_adapt_mode": {
             "description": "反馈自适应策略",
             "type": "string",
@@ -192,7 +199,7 @@
               "对照"
             ],
             "default": "关闭",
-            "hint": "须同时开启反馈观察。学习：LinUCB选择表达和配图，真实结算反馈更新；判断模型每批至少8个新样本、间隔15分钟提炼经验。对照：每15分钟交替原策略与学习策略。按群独立，保持基础人设和发言频率。"
+            "hint": "须同时开启反馈观察。学习：开启三候选时主动插话择优发送，其他回复使用原表达和配图策略；真实反馈更新经验；判断模型每批至少8个新样本、间隔15分钟提炼经验。对照：每15分钟交替原策略与学习策略。按群独立，保持基础人设和发言频率。"
           },
           "sticker_learning": {
             "description": "表情包收集与共享推荐",

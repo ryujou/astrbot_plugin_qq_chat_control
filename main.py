@@ -120,6 +120,10 @@ class QQChatControl(Star):
             if rule.get('feedback_adapt_mode', '关闭') != '关闭' and not rule.get('feedback_observe'):
                 self.validation_error = '自适应回复须同时开启回复反馈观察'
                 continue
+            if (not 0 <= int(rule.get('banter_intensity', 30)) <= 100
+                    or int(rule.get('knowledge_document_mb', 20)) < 1 or int(rule.get('knowledge_image_mb', 10)) < 1):
+                self.validation_error = '整活尺度须为0到100，资料大小上限须为正整数'
+                continue
             self.rules[key] = dict(rule)
         self.counts = {}
         self.idle_states = {}
@@ -216,7 +220,7 @@ class QQChatControl(Star):
         if self.idle_states.get(key) is not state:
             return
         event = copy(state['event'])
-        event._extras = {'qq_chat_automatic': True}
+        event._extras = {'qq_chat_automatic': True, 'qq_candidate_started': monotonic()}
         usage_token = current_message.set(None)
         try:
             await self.ensure_ready()
@@ -353,6 +357,7 @@ class QQChatControl(Star):
         if random.random() >= float(rule.get('reply_probability',30)) / 100:
             return
         event.set_extra('qq_chat_automatic', True)
+        event.set_extra('qq_candidate_started', monotonic())
         event.is_at_or_wake_command = True
         event.should_call_llm(False)
 
