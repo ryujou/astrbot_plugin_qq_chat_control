@@ -273,3 +273,23 @@ class ReactionTests(unittest.IsolatedAsyncioTestCase):
         self.learning.close();self.client.call_action.reset_mock();self.learning.open()
         self.assertEqual(self.actions()[0]['status'],'unknown')
         self.client.call_action.assert_not_awaited()
+
+    async def test_late_cached_image_description_reuses_existing_analysis(self):
+        self.setup_reactions();rows=self.evidence()
+        self.learning.db.execute("UPDATE reaction_observations SET text='',status='missing',resolved=1")
+        self.stickers.descriptions=lambda *args:['图片里用风扇给另一台风扇降温']
+        self.r.summarize=AsyncMock()
+        self.policy.judge.return_value=json.dumps(dict(items=[dict(id=r['id'],categories=[CATEGORIES[1]],meaning='调侃',reason='反常操作',boundary='求助不用',confidence=.95,uncertain=False) for r in rows]))
+        await self.r.tick(self.scope)
+        self.assertEqual(self.r.observations(self.scope)['counts']['classified'],5)
+        self.assertTrue(all(r['image_descriptions'] for r in self.policy.judge.call_args.args[2]['items']))
+        self.client.call_action.assert_not_awaited()
+
+    async def test_stop_reacting_preserves_text_retry(self):
+        event=self.setup_reactions()
+        event.get_message_str=lambda:'别贴表情了！'
+        self.learning.opportunities.save(self.scope,dict(count=7,status='retry',attempt=1,serial=2))
+        self.policy.interaction.observe(event)
+        self.assertGreater(self.r.blocked[self.scope],time.time())
+        self.assertEqual(self.learning.opportunities.state(self.scope),dict(count=7,status='retry',attempt=1,serial=2))
+        self.r.schedule(event);self.assertFalse(self.r.active)

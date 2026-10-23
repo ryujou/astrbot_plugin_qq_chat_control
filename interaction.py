@@ -92,6 +92,8 @@ class GroupInteraction:
         if str(event.get_sender_id()) in {str(event.get_self_id()), *map(str, self.owner.rule(event).get('feedback_bot_ids', []))}:
             return
         text = event.get_message_str().strip()
+        if re.match(r'^(?:(?:别|不要)(?:再|乱)?(?:给我)?贴(?:表情|猴子|🐵)?(?:了)?|停止贴表情)(?:[，。！!？?\s]|$)', text):
+            self.learning.reactions.cancel((event.get_platform_id(), str(event.get_group_id())), '收到停止贴表情要求', stop=True)
         if re.match(r'^(?:/stop(?:\s|$)|(?:别说了|别发了|不要再说了|停止回复|停止插话|别刷屏)(?:[，。！!\s]|$))', text):
             event.set_extra('qq_suppress_auto', True)
             self.learning.reactions.cancel((event.get_platform_id(), str(event.get_group_id())), '收到明确停止要求', stop=True)
