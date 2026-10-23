@@ -126,7 +126,8 @@ class FollowUpTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_prepare_consumes_follow_up_before_session_binding(self):
         owner = NS(**vars(self.owner), ensure_ready=AsyncMock(), provider_id=lambda event: 'test',
-                   provider=lambda provider_id: self.provider, bindings=NS(bind=AsyncMock()))
+                   provider=lambda provider_id: self.provider, bindings=NS(bind=AsyncMock()),
+                   learning=NS(policy=NS(interaction=NS(start_foreground=Mock()))))
         event = Event()
         await main.QQChatControl.prepare(owner, event)
         self.assertTrue(event.stopped)

@@ -533,7 +533,9 @@ class AdaptationTests(unittest.IsolatedAsyncioTestCase):
         reply_id = await self.settled(correction=1)
         action = self.policy.action_for(reply_id)
         action['lesson_advice'] = ['先吐槽再回答']
+        action['used_lesson_ids'] = ['l1']
         self.learning.db.execute('UPDATE reply_actions SET action=? WHERE reply_id=?', (json.dumps(action), reply_id))
+        self.learning.db.execute("UPDATE replies SET summary=json_set(summary,'$.affected_lesson_ids',json('[\"l1\"]')) WHERE id=?", (reply_id,))
         self.policy.learn(scope)
         lesson = self.policy.state(scope)['lessons'][0]
         self.assertEqual(lesson['status'], 'suspended')

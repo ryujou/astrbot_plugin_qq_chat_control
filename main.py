@@ -1,6 +1,5 @@
 import asyncio
 import json
-import random
 import sys
 from copy import copy
 from pathlib import Path
@@ -125,7 +124,6 @@ class QQChatControl(Star):
                 self.validation_error = '整活尺度须为0到100，资料大小上限须为正整数'
                 continue
             self.rules[key] = dict(rule)
-        self.counts = {}
         self.idle_states = {}
         self.tasks = set()
         self.cleanup_task = None
@@ -329,6 +327,7 @@ class QQChatControl(Star):
         event.set_extra('qq_chat_automatic', False)
         self.profiles.observe(event)
         self.learning.observe(event)
+        self.learning.policy.interaction.observe(event)
         event.should_call_llm(not self.chat_allowed(event))
         handlers = event.get_extra('activated_handlers', [])
         if any(h.handler_name in LLM_HANDLERS.get(h.handler_module_path, set()) for h in handlers) and not self.admin_allowed(event):
@@ -346,15 +345,12 @@ class QQChatControl(Star):
     async def auto_reply(self, event):
         rule = self.rule(event)
         if (event.get_platform_name() != 'aiocqhttp' or event.is_stopped() or not rule.get('auto_reply')
+            or event.get_extra('qq_suppress_auto')
             or str(event.get_group_id()) not in self.config.get('allowed_group_ids', [])
             or not ordinary_message(event, self.context.get_config(event.unified_msg_origin))):
             return
         key = (event.get_platform_id(), str(event.get_group_id()))
-        self.counts[key] = self.counts.get(key, 0) + 1
-        if self.counts[key] < int(rule.get('message_count',10)):
-            return
-        self.counts[key] = 0
-        if random.random() >= float(rule.get('reply_probability',30)) / 100:
+        if not self.learning.opportunities.take(event, rule, blocked=self.learning.policy.interaction.foreground_busy(key)):
             return
         event.set_extra('qq_chat_automatic', True)
         event.set_extra('qq_candidate_started', monotonic())
@@ -373,6 +369,8 @@ class QQChatControl(Star):
             event.stop_event()
             raise
         event.set_extra('selected_provider', provider_id)
+        if event.get_group_id() and event.is_at_or_wake_command and not event.get_extra('qq_chat_automatic') and self.chat_allowed(event):
+            self.learning.policy.interaction.start_foreground(event)
         if await steer_task(self, event, self.provider(provider_id)):
             event.should_call_llm(True)
             event.stop_event()
@@ -506,7 +504,7 @@ class QQChatControl(Star):
         rule = self.rules.get((event.get_platform_id(),group_id),{})
         if not rule.get('auto_only') or group_id not in self.config['allowed_group_ids']:
             return
-        self.counts.pop((event.get_platform_id(),group_id),None)
+        self.learning.opportunities.clear((event.get_platform_id(), group_id))
         from .personas import belongs
         manager = self.context.conversation_manager
         origins = {c.user_id for c in await manager.get_conversations(platform_id=event.get_platform_id()) if belongs(c.user_id,event.get_platform_id(),group_id)}

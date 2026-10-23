@@ -175,6 +175,7 @@ class LearningWeb:
         rows = [dict(r) for r in db.execute('SELECT source_id,kind,name,status,reason,cursor FROM group_sources WHERE platform=? AND group_id=? ORDER BY kind,name LIMIT ? OFFSET ?', (*scope, size, offset))]
         counts = dict(db.execute('SELECT status,COUNT(*) FROM group_sources WHERE platform=? AND group_id=? GROUP BY status', scope).fetchall())
         return dict(state=background.state(scope), worker=dict(stage=background.stage, enabled=background.enabled(scope), scheduled=background.task is not None, running=background.task is not None and not background.task.done(), active_replies=sum(not t.done() for t in self.owner.limits.tasks)), intensity=self.owner.rules[scope].get('banter_intensity', 30),
+                    expressions=self.owner.learning.expressions.snapshot(scope),
                     items=rows, counts=counts, total=sum(counts.values()), page=page, page_size=size)
 
     async def choices(self):
@@ -185,8 +186,11 @@ class LearningWeb:
         for row in rows:
             row['candidates'] = json.loads(row['candidates'])
             row['sources'] = json.loads(row['sources'])
+            row['details'] = json.loads(row['details'] or '{}')
         total = db.execute('SELECT COUNT(*) FROM interaction_choices WHERE platform=? AND group_id=?', scope).fetchone()[0]
-        return dict(items=rows, total=total, page=page, page_size=size)
+        return dict(items=rows, total=total, page=page, page_size=size,
+                    opportunity=self.owner.learning.opportunities.state(scope),
+                    threshold=int(self.owner.rules[scope].get('message_count', 10)))
 
     async def stickers(self):
         scope = self.scope()

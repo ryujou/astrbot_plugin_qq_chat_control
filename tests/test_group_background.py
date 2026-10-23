@@ -146,12 +146,13 @@ class BackgroundTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_habits_require_two_people_and_distinct_fragments(self):
         scope = self.setup_background()
-        e1 = self.event(sender='alice', text='喜欢音乐反串')
-        e2 = self.event(sender='bob', text='我也接这个梗')
-        self.learning.db.execute('UPDATE messages SET ts=ts-360 WHERE message_id=?', (e1.get_message_id() if hasattr(e1, 'get_message_id') else '1',))
-        self.policy.judge = AsyncMock(return_value=json.dumps(dict(habits=[dict(text='可以跨作品互相接梗', message_ids=['1', '2'])])))
+        for i in range(10):
+            self.event(sender='alice' if i % 2 else 'bob', text='喜欢音乐反串')
+        self.learning.db.execute('UPDATE expression_pending SET ts=ts-360 WHERE message_id=?', ('1',))
+        self.policy.judge = AsyncMock(return_value=json.dumps(dict(items=[dict(scene='音乐', style='跨作品接梗',
+            boundary='不打断求助', confidence=.95, uncertain=False, message_ids=['1', '2'])])))
         await self.bg.habits(scope)
-        self.assertEqual(len(self.bg.state(scope)['habits']), 1)
+        self.assertEqual(self.learning.expressions.snapshot(scope)['items'][0]['status'], 'active')
 
     async def test_weighted_review_and_intensity(self):
         self.setup_background()
@@ -199,7 +200,8 @@ class BackgroundTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(record['candidates'][1]['rejected'])
         candidates[2]['text'] = ''
         self.policy.judge.reset_mock()
-        self.assertIsNone(await self.choose.choose(scope, NS(system_prompt='群友'), [], {}))
+        with self.assertRaisesRegex(ValueError, '字段校验'):
+            await self.choose.choose(scope, NS(system_prompt='群友'), [], {})
         self.policy.judge.assert_not_awaited()
 
     async def test_stale_or_uncertain_candidate_is_not_sent(self):
@@ -219,7 +221,8 @@ class BackgroundTests(unittest.IsolatedAsyncioTestCase):
         self.stickers.ranked_pool = AsyncMock(return_value=[])
         self.choose.generate = AsyncMock(return_value=dict(items=self.candidates()))
         self.policy.judge = AsyncMock(side_effect=[json.dumps(self.review()), json.dumps(dict(send=False, confidence=.99))])
-        self.choose.messages = lambda scope: [dict(message_id='new', text='别说了，换话题')]
+        from unittest.mock import Mock
+        self.choose.messages = Mock(side_effect=[[], [dict(message_id='new', text='别说了，换话题')]])
         record = {}
         selected = await self.choose.choose(scope, NS(system_prompt='群友'), [], record)
         self.assertIsNone(selected)

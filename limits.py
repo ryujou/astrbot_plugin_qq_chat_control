@@ -232,11 +232,14 @@ class LLMLimits:
                 return await self.execute(scheduler, event)
             except BaseException as failure:
                 error = failure
+                if event.get_extra('qq_auto_opportunity') is not None and not event.get_extra('qq_auto_cancelled'):
+                    event.set_extra('qq_auto_retryable', True)
                 raise
             finally:
                 try:
                     if usage is not None:
                         self.owner.learning.finish(event)
+                        self.owner.learning.policy.interaction.finish_foreground(event)
                         progress = event.get_extra('qq_work_progress')
                         if progress:
                             await progress.finish(error)
