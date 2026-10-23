@@ -55,6 +55,21 @@ class PublicConfigTests(unittest.IsolatedAsyncioTestCase):
         await plugin.bind_request(event, request)
         self.assertIsNone(request.func_tool)
 
+    async def test_generic_reply_preserves_tools_only_for_unlimited_direct_chat(self):
+        plugin = QQChatControl.__new__(QQChatControl)
+        plugin.chat_allowed = lambda event: True
+        plugin.provider_id = lambda event: 'ordinary'
+        plugin.provider = lambda key: NS(provider_config={'type':'openai_chat_completion'})
+        plugin.learning = NS(prepare=Mock(), policy=NS(prepare=AsyncMock(return_value=False)))
+        event = NS(get_platform_name=lambda:'aiocqhttp', get_extra=lambda key:False)
+        for limited in (True, False):
+            with self.subTest(limited=limited):
+                plugin.limits = NS(is_limited=lambda event: limited)
+                tools = object()
+                request = NS(func_tool=tools)
+                await plugin.bind_request(event, request)
+                self.assertIs(request.func_tool, None if limited else tools)
+
     def test_defaults_have_no_identifiers_or_enabled_learning(self):
         schema = json.loads((Path(__file__).resolve().parents[1]/'_conf_schema.json').read_text(encoding='utf-8'))
         for key in ['management_group_id','default_provider_id','codex_provider_id','learning_embedding_provider_id']:

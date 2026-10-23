@@ -2,7 +2,10 @@ import asyncio
 import json
 import sqlite3
 import time
+from contextlib import closing
 from astrbot.core.utils.active_event_registry import active_event_registry
+
+from .personas import belongs
 
 
 DEFAULTS = dict(history_turns=10, idle_hours=2, session_hours=12,
@@ -55,14 +58,15 @@ class ShortMemory:
             if hasattr(provider, 'delete_chat_history'):
                 await provider.delete_chat_history({origin})
 
-    async def prune_archived(self, platforms):
+    async def prune_archived(self, scopes):
         manager = self.context.conversation_manager
         removed = 0
-        for platform in platforms:
+        for platform in {platform for platform, _ in scopes}:
+            groups = {group for configured_platform, group in scopes if configured_platform == platform}
             conversations = await manager.get_conversations(platform_id=platform)
             for conversation in conversations:
                 origin = conversation.user_id
-                if not origin.startswith((platform + ':GroupMessage:', platform + ':FriendMessage:')):
+                if not any(belongs(origin, platform, group) for group in groups):
                     continue
                 current = await manager.get_curr_conversation_id(origin)
                 if not current or conversation.cid == current or active_event_registry._events.get(origin):
@@ -130,8 +134,11 @@ class ShortMemory:
                     records.clear(); records.extend(text for _, text in pairs)
                     ids.clear(); ids.extend(key for key, _ in pairs)
                     self.record_times[origin] = {key: times[key] for key, _ in pairs}
-        with sqlite3.connect('data/data_v4.db') as db:
-            args = (event.get_platform_id(), str(event.get_group_id()))
+        await asyncio.to_thread(self.prune_records, event.get_platform_id(), str(event.get_group_id()), cutoff, limit)
+
+    def prune_records(self, platform, group, cutoff, limit):
+        with closing(sqlite3.connect('data/data_v4.db')) as db, db:
+            args = (platform, group)
             db.execute("DELETE FROM platform_message_history WHERE platform_id=? AND user_id=? "
                        "AND (julianday(created_at)-2440587.5)*86400 <= ?", (*args, cutoff))
             db.execute('DELETE FROM platform_message_history WHERE platform_id=? AND user_id=? '

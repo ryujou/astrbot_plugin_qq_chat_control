@@ -132,13 +132,34 @@ class WebSettings:
         values.update(changes)
         if not config.get('default_provider_id'):
             raise ValueError('请选择默认聊天模型')
+        for key in ('default_provider_id', 'codex_provider_id'):
+            if config.get(key):
+                self.owner.provider(config[key])
         policy(config, {})
         for rule in config.get('group_rules', []):
             policy(config, rule)
+            for key in ('provider_id', 'feedback_judge_provider_id'):
+                if rule.get(key):
+                    self.owner.provider(rule[key])
+            persona = rule.get('persona_id')
+            if persona and self.owner.context.persona_manager.get_persona_v3_by_id(persona) is None:
+                raise ValueError('群人设不存在：' + persona)
             if rule.get('feedback_adapt_mode', '关闭') != '关闭' and not rule.get('feedback_observe'):
                 raise ValueError('启用学习或对照策略时，须同时开启回复反馈观察')
+            if rule.get('sticker_learning') and rule.get('feedback_adapt_mode', '关闭') != '关闭':
+                provider_id = config.get('learning_embedding_provider_id', '')
+                provider = self.owner.context.get_provider_by_id(provider_id)
+                if provider is None or not hasattr(provider, 'get_embedding'):
+                    raise ValueError('表情包学习需要已启用的向量模型，请先选择向量模型或关闭相关群的表情包学习')
         self.owner.config.save_config(config)
         success, error = await self.owner.context._star_manager.reload('astrbot_plugin_qq_chat_control')
         if not success:
             raise ValueError('配置已保存，但插件重载失败，请在插件管理中检查：' + str(error))
+        plugin = self.owner.context.get_registered_star('astrbot_plugin_qq_chat_control')
+        if plugin is None or plugin.star_cls is None:
+            raise ValueError('配置已保存，但插件未加载，请在插件管理中检查')
+        try:
+            await plugin.star_cls.ensure_ready()
+        except Exception as error:
+            raise ValueError('配置已保存，但聊天尚不可用，请检查配置：' + str(error)) from error
         return dict(saved=True, message='设置已保存并生效')

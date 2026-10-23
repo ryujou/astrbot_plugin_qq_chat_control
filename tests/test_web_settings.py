@@ -31,9 +31,12 @@ class SettingsTests(unittest.IsolatedAsyncioTestCase):
                              feedback_observe=True, feedback_adapt_mode='学习', private_extra='keep'),
                          dict(platform_id='qq', group_id='demo-b', message_count=15)], private_global='keep'))
         self.reload = AsyncMock(return_value=(True, None))
+        self.runtime = NS(ensure_ready=AsyncMock())
         provider = NS(provider_config={'id':'chat'}, get_model=lambda:'demo-model')
         self.owner = NS(config=self.config, provider=lambda key: provider if key=='chat' else self.missing(key),
             context=NS(_star_manager=NS(reload=self.reload), get_all_providers=lambda:[provider], get_all_embedding_providers=lambda:[],
+                get_provider_by_id=lambda key: provider if key == 'chat' else None,
+                get_registered_star=lambda name: NS(star_cls=self.runtime),
                 persona_manager=NS(personas_v3=[{'name':'friend'}, {'name':'other'}],
                                    get_persona_v3_by_id=lambda key: {'name':key} if key in {'friend','other'} else None)))
         self.settings = WebSettings(self.owner)
@@ -70,6 +73,7 @@ class SettingsTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(current['group_rules'][0]['private_extra'], 'keep')
         self.assertEqual(current['private_global'], 'keep')
         self.reload.assert_awaited_once_with('astrbot_plugin_qq_chat_control')
+        self.runtime.ensure_ready.assert_awaited_once()
 
     async def test_global_save_and_no_change(self):
         self.assertFalse((await self.save({'message_count':8}, {'message_count':8}))['saved'])
@@ -123,6 +127,42 @@ class SettingsTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaisesRegex(ValueError, '群规则已不存在'):
             await self.save({'message_count':10}, {'message_count':8}, group_id='missing')
         self.reload.assert_not_awaited()
+
+    async def test_sticker_learning_requires_embedding_before_save(self):
+        original = self.settings.current()
+        with self.assertRaisesRegex(ValueError, '表情包学习需要已启用的向量模型'):
+            await self.save({'sticker_learning':True}, {'sticker_learning':False})
+        self.assertEqual(self.settings.current(), original)
+        self.reload.assert_not_awaited()
+
+    async def test_cannot_clear_embedding_used_by_any_group(self):
+        values = self.settings.current()
+        values['learning_embedding_provider_id'] = 'embed'
+        values['group_rules'][1].update(sticker_learning=True, feedback_observe=True, feedback_adapt_mode='学习')
+        self.config.save_config(values)
+        with self.assertRaisesRegex(ValueError, '表情包学习需要已启用的向量模型'):
+            await self.save({'learning_embedding_provider_id':''}, {'learning_embedding_provider_id':'embed'}, area='global')
+        self.assertEqual(self.settings.current(), values)
+        self.reload.assert_not_awaited()
+
+    async def test_embedding_can_be_cleared_when_learning_is_off(self):
+        values = self.settings.current()
+        values['learning_embedding_provider_id'] = 'embed'
+        values['group_rules'][1].update(sticker_learning=True, feedback_adapt_mode='关闭')
+        self.config.save_config(values)
+        self.assertTrue((await self.save({'learning_embedding_provider_id':''},
+            {'learning_embedding_provider_id':'embed'}, area='global'))['saved'])
+
+    async def test_reload_success_but_unready_runtime_does_not_report_success(self):
+        self.runtime.ensure_ready.side_effect = ValueError('synthetic unavailable provider')
+        with self.assertRaisesRegex(ValueError, '配置已保存，但聊天尚不可用.*synthetic unavailable provider'):
+            await self.save({'message_count':12}, {'message_count':8})
+        self.assertEqual(self.settings.current()['group_rules'][0]['message_count'], 12)
+
+    async def test_missing_runtime_after_reload_does_not_report_success(self):
+        self.owner.context.get_registered_star = lambda name: None
+        with self.assertRaisesRegex(ValueError, '配置已保存，但插件未加载'):
+            await self.save({'message_count':12}, {'message_count':8})
 
 
 if __name__ == '__main__':

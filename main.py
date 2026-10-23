@@ -158,7 +158,7 @@ class QQChatControl(Star):
         while True:
             try:
                 self.schedule_idle_replies()
-                count = await self.memory.prune_archived({platform for platform, _ in self.rules})
+                count = await self.memory.prune_archived(self.rules)
                 if count:
                     logger.info('已清理 %s 个旧QQ会话，仅保留各成员当前会话', count)
                 self.profiles.schedule_update()
