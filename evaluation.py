@@ -98,7 +98,8 @@ def comparison(learning, scope, now=None):
         if adaptive['unknown'] / adaptive['total'] > baseline['unknown'] / baseline['total']:
             warnings.append('学习策略的未知样本占比更高，有效样本的均值可能存在选择偏差。')
     costs = [dict(row) for row in db.execute(
-        'SELECT purpose,provider,COUNT(*) calls,SUM(success=0) failures,AVG(seconds) seconds,'
+        "SELECT purpose,provider,COUNT(*) calls,SUM(status='failed') failures,SUM(status='interrupted') interrupted,"
+        "SUM(status='legacy' AND success=0) legacy_failures,AVG(seconds) seconds,"
         'SUM(input_tokens IS NOT NULL) usage_known,SUM(input_tokens) input_tokens,'
         'SUM(cached_tokens) cached_tokens,SUM(output_tokens) output_tokens FROM model_calls '
         'WHERE platform=? AND group_id=? AND persona=? AND created>=? GROUP BY purpose,provider', (*scope, since))]
@@ -108,7 +109,14 @@ def comparison(learning, scope, now=None):
         'AND a.group_id=c.group_id AND a.persona=c.persona '
         'WHERE c.platform=? AND c.group_id=? AND c.persona=? AND c.created>=? '
         "AND c.purpose IN ('reply','scene','sticker_choose') GROUP BY phase", (*scope, since))]
-    return dict(phases=stats, evidence=evidence, warnings=warnings, periods=periods[-48:], costs=costs, phase_costs=phase_costs,
+    versions = []
+    for version in sorted({r['action'].get('policy_version', 'unknown') for r in rows}):
+        items = [r for r in rows if r['action'].get('policy_version', 'unknown') == version]
+        valid = [r for r in items if r['usable']]
+        versions.append(dict(version=version, total=len(items), samples=len(valid),
+            participants=average([r['summary'].get('new_participants', 0) for r in valid]),
+            annoyance=sum(r['summary'].get('annoyance_people', 0)>0 for r in valid)))
+    return dict(versions=versions, phases=stats, evidence=evidence, warnings=warnings, periods=periods[-48:], costs=costs, phase_costs=phase_costs,
                 causes=dict(causes), window_days=14,
                 cost_note='回复与学习LLM调用从1.11.0起记录，不含向量检索、成员画像及工具费用。Token只统计Provider实际返回值，缺失用量和金额为未知。后台共享判断不分摊给原/学习策略。',
                 repeat_note='10分钟内与最近10条实际回复的规范化文本相同、长文本相似度≥0.9或使用同一张图，记为重复；不判定是否合理。')

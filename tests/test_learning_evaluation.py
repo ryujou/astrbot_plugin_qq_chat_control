@@ -104,6 +104,16 @@ class EvaluationTests(unittest.TestCase):
         self.learning.clear_group('qq_private','a')
         self.assertEqual(self.db.execute('SELECT group_id FROM model_calls').fetchone()[0],'b')
 
+    def test_versions_and_interrupted_calls_are_separate(self):
+        self.sample(39, 'candidate', version='1.14.0')
+        self.sample(39, 'candidate', version='1.16.0')
+        for status in ('failed', 'interrupted', 'legacy'):
+            self.db.execute("INSERT INTO model_calls(platform,group_id,persona,created,purpose,provider,success,status) VALUES ('qq_private','a','persona',?,'reaction_decide','test',0,?)", (self.now-1,status))
+        report = comparison(self.learning, self.scope, self.now)
+        self.assertEqual({v['version']:v['samples'] for v in report['versions']}, {'1.14.0':1,'1.16.0':1})
+        cost = report['costs'][0]
+        self.assertEqual((cost['failures'],cost['interrupted'],cost['legacy_failures']), (1,1,1))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -12,7 +12,7 @@ from .background import Excluded
 
 
 CATEGORIES = ('劲爆／爆料', '荒诞／抽象', '搞笑／整活', '成果／分享', '观点／讨论', '求助／困惑', '情绪／倾诉', '其他／不确定')
-REACTION_VERSION = 'semantic-reactions-v1'
+REACTION_VERSION = 'semantic-reactions-v2'
 SEEDS = {'424': '劲爆爆料、震惊或离谱展开时的红色按钮；不是见到关键词就贴',
          '128053': '荒诞段子、犯傻式操作、抽象整活；正常讨论猴子、认真求助或转述不触发',
          '201': '认可具体观点或成果', '320': '值得庆祝的成果或经历',
@@ -316,8 +316,9 @@ class GroupReactions:
                 bg = self.learning.background.state(scope) if self.owner.rules[scope].get('group_background', True) else {}
                 persona_manager = getattr(self.owner.context, 'persona_manager', None)
                 person = persona_manager.get_persona_v3_by_id(persona) if persona_manager else None
-                payload = dict(targets=targets, messages=messages, categories=CATEGORIES, emojis=self.emoji_pool(scope),
-                    patterns=self.patterns(scope), background=dict(summary=bg.get('summary', '')[:1600], notices=bg.get('notices', [])),
+                target_ids = {m['message_id'] for m in targets}
+                payload = dict(targets=targets, messages=[m for m in messages if m['message_id'] not in target_ids], categories=CATEGORIES, emojis=self.emoji_pool(scope),
+                    patterns=[{k: v for k, v in p.items() if k not in {'evidence', 'embedding'}} for p in self.patterns(scope)], background=dict(summary=bg.get('summary', '')[:1600], notices=[dict(text=n.get('text', ''), pinned=n.get('pinned')) for n in bg.get('notices', [])]),
                     intensity=self.owner.rules[scope].get('banter_intensity', 30), persona=person.get('prompt', persona) if isinstance(person, dict) else persona,
                     recent=[dict(r) for r in self.db.execute('SELECT message_id,emoji_id,source,status FROM reaction_actions '
                         'WHERE platform=? AND group_id=? AND created>? ORDER BY id DESC LIMIT 8', (*scope, time.time()-600))])

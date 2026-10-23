@@ -26,6 +26,33 @@ class BackgroundTests(unittest.IsolatedAsyncioTestCase):
         return [dict(id=i, text=t, style=s, intensity=40, sticker_id=None) for i, t, s in
                 [(1, '这段演出确实有意思', '接话'), (2, '我投隔壁偶像一票', '跨作品反串'), (3, '你们最喜欢哪场现场', '递话题')]]
 
+    async def test_failed_refresh_retries_after_five_minutes(self):
+        scope = self.setup_background()
+        self.bg.enabled = lambda candidate: candidate == scope
+        self.bg.refreshed.add(scope)
+        self.bg.save(scope, dict(attempted=time.time()-301, errors={'background':'群平台未连接'}))
+        self.bg.refresh = AsyncMock()
+        self.bg.habits = AsyncMock()
+        await self.bg.tick()
+        self.bg.refresh.assert_awaited_once_with(scope)
+        self.bg.refresh.reset_mock()
+        self.bg.save(scope, dict(attempted=time.time(), errors={'background':'群平台未连接'}))
+        await self.bg.tick()
+        self.bg.refresh.assert_not_awaited()
+        self.bg.save(scope, dict(attempted=time.time()-301, errors={}))
+        await self.bg.tick()
+        self.bg.refresh.assert_not_awaited()
+
+    def test_prompt_compaction_preserves_rules_and_expression_boundaries(self):
+        from astrbot_plugin_qq_chat_control.interaction import prompt_background, prompt_patterns
+        bg = dict(notices=[{'text':'严禁人身攻击'}], sources=[{'text':'资料正文'}], expressions=[{'evidence':'large'}])
+        compact = prompt_background(bg)
+        self.assertEqual(compact['notices'], bg['notices'])
+        self.assertEqual(compact['sources'], bg['sources'])
+        self.assertNotIn('expressions', compact)
+        self.assertEqual(prompt_patterns([dict(id='e1', scene='玩笑', boundary='求助不用', evidence=['private'])]),
+                         [dict(id='e1', scene='玩笑', boundary='求助不用')])
+
     def review(self, uncertain=False):
         return dict(items=[dict(id=i, fit=4, engagement=4, natural=4, accuracy=4, novelty=4,
                                eligible=True, uncertain=uncertain, reason='适合本群当前话题') for i in (1, 2, 3)])

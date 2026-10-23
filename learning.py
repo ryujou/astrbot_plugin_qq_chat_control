@@ -140,6 +140,8 @@ class FeedbackLearning:
             if 'source_ts' not in {row[1] for row in self.db.execute('PRAGMA table_info(messages)')}:
                 self.db.execute('ALTER TABLE messages ADD COLUMN source_ts REAL')
             self.opportunities.recover(self.db)
+            if 'status' not in {row[1] for row in self.db.execute('PRAGMA table_info(model_calls)')}:
+                self.db.execute("ALTER TABLE model_calls ADD COLUMN status TEXT DEFAULT 'legacy'")
             self.reactions.initialize(self.db)
         return self.db
 
@@ -153,11 +155,13 @@ class FeedbackLearning:
         if any(type(value) is not int or value < 0 for value in values):
             values = [None, None, None]
         with self.open():
+            task = asyncio.current_task()
+            status = 'success' if success else ('interrupted' if task and task.cancelling() else 'failed')
             self.db.execute('INSERT INTO model_calls '
-                '(platform,group_id,persona,created,purpose,provider,reply_id,seconds,success,input_tokens,cached_tokens,output_tokens) '
-                'VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+                '(platform,group_id,persona,created,purpose,provider,reply_id,seconds,success,input_tokens,cached_tokens,output_tokens,status) '
+                'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
                 (*scope, persona, time.time(), purpose, provider, reply_id,
-                 max(0, time.monotonic() - started), int(success), *values))
+                 max(0, time.monotonic() - started), int(success), *values, status))
 
     def record_reply_call(self, event, provider, started, response, success):
         if self.enabled(event) and event.get_extra('qq_feedback_reply') is not None:

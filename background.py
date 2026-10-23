@@ -188,7 +188,7 @@ class GroupBackground:
                 payload = dict(name=name, notices=notices, sources=['group_name'] + [n['id'] for n in notices],
                                habits=state.get('habits', []))
                 self.stage = '总结群背景'
-                result = loads(await self.learning.policy.judge(scope, SUMMARY, payload, purpose='group_background'))
+                result = loads(await self.learning.policy.judge(scope, SUMMARY + '\n简称、圈内黑话没有明确证据时保持原词并标为未知，不擅自展开成具体作品。', payload, purpose='group_background'))
                 state['summary'] = str(result['summary'])[:6000]
                 state['sources'] = [s for s in result.get('sources', []) if s in payload['sources']]
                 state['summary_input'] = summary_input
@@ -205,6 +205,10 @@ class GroupBackground:
                     errors[kind] = str(e)
                     logger.exception('群资料目录读取失败：%s', kind)
         state['errors'] = errors
+        if not errors:
+            state['last_success'] = time.time()
+            with self.db:
+                self.db.execute("UPDATE group_sources SET status='pending',reason='' WHERE platform=? AND group_id=? AND status='failed' AND reason='群平台未连接'", scope)
         self.save(scope, state)
         self.refreshed.add(scope)
 
@@ -343,7 +347,7 @@ class GroupBackground:
                     break
                 chunks.append(dict(source=row['source_id'], name=row['name'], position=row['position'], text=content))
                 budget -= len(content)
-        return dict(name=state.get('name'), summary=state.get('summary'), notices=state.get('notices', []),
+        return dict(name=state.get('name'), summary=state.get('summary'), notices=[dict(text=n.get('text', ''), pinned=n.get('pinned')) for n in state.get('notices', [])],
                     habits=[], expressions=expressions, sources=chunks, intensity=rule.get('banter_intensity', 30))
 
     async def tick(self):
@@ -352,7 +356,8 @@ class GroupBackground:
             if any(not t.done() for t in self.owner.limits.tasks):
                 return
             state = self.state(scope)
-            if scope not in self.refreshed or time.time() - state.get('attempted', 0) >= 21600:
+            interval = 300 if state.get('errors') else 21600
+            if scope not in self.refreshed or time.time() - state.get('attempted', 0) >= interval:
                 await self.refresh(scope)
         for scope in scopes:
             if any(not t.done() for t in self.owner.limits.tasks):
