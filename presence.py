@@ -82,12 +82,13 @@ def head_avatar(image, box):
     left,top,right,bottom = [v*(image.width if i%2==0 else image.height) for i,v in enumerate(box)]
     if min(right-left,bottom-top)<32:
         raise ValueError('原图头部像素不足')
-    # Crop only existing pixels; reject when a complete head cannot fit inside the circle.
+    # Preserve the head rectangle in source pixels; the visual review checks its circular silhouette.
     side = min(max(right-left,bottom-top)/.6, image.width, image.height)
     for size in (side, min(image.width,image.height)):
         cx = min(max((left+right)/2,size/2),image.width-size/2)
         cy = min(max((top+bottom)/2,size/2),image.height-size/2)
-        if all((x-cx)**2+(y-cy)**2 <= (.48*size)**2 for x in (left,right) for y in (top,bottom)):
+        if (left >= cx-size*.49 and right <= cx+size*.49
+                and top >= cy-size*.49 and bottom <= cy+size*.49):
             return jpeg(image.resize((512,512),Image.Resampling.LANCZOS,
                 box=(cx-size/2,cy-size/2,cx+size/2,cy+size/2)))
     raise ValueError('原图空间不足，无法同时保留完整头部且不填充背景')
