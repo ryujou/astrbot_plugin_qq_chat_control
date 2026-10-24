@@ -6,7 +6,7 @@
 
 AstrBot 完整插件 · 回复反馈 · 群内黑话 · 表情包 · 权限与人设
 
-[![Version](https://img.shields.io/badge/version-1.17.0-4f46e5?style=flat-square)](metadata.yaml)
+[![Version](https://img.shields.io/badge/version-1.18.0-4f46e5?style=flat-square)](metadata.yaml)
 [![AstrBot](https://img.shields.io/badge/AstrBot-%E2%89%A54.28%20%3C5-2563eb?style=flat-square)](https://github.com/AstrBotDevs/AstrBot)
 [![Platform](https://img.shields.io/badge/platform-QQ%20%2F%20OneBot-0891b2?style=flat-square)](#运行环境)
 [![License](https://img.shields.io/badge/license-MIT-16a34a?style=flat-square)](LICENSE)
@@ -27,7 +27,13 @@ AstrBot 完整插件 · 回复反馈 · 群内黑话 · 表情包 · 权限与�
 
 ## 功能
 
+### 达到聊天次数上限
+
+成员首次用完本轮聊天次数时，结合本群人设、已确认的表达方式和公告边界生成一句自然的结束语，不报重置时间、不引导付费。同一成员在本群、本轮周期内重复触发时复用原句，重载后仍保留；周期恢复后下次超限重新生成。模型失败时使用简短备用句并复用，不反复调用。不同群和人设分别处理，实际次数与白名单规则不变。
+
 ### 自主群名片与头像
+
+“名片与头像”页提供 **补充头像候选**：每轮检查一页图片，最多加入5张合格候选，数量不足时保留实际结果；只入池，不更换QQ头像。可在自动头像开关关闭时使用。再次补充会查看后续分页。每张候选的 **使用这张** 按钮经确认后执行一次账号头像更换，保留自动开关原值；操作状态及结果显示在本页。
 
 学习看板 → **设置 → 本群设置 → 自动群名片**：独立开关，参考本群近期聊天、活跃成员名片和群人设，生成自己的名字。名字不带固定前缀，不照抄其他成员。默认随机冷却 6–12 小时，滚动 24 小时最多两次；没有新聊天时保持原名。
 

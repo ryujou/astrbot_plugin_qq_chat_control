@@ -68,6 +68,8 @@ class SelfPresence:
         self.task = None
         self.folder = learning.path.parent / 'avatars'
         self.generations = {}
+        self.operation = ''
+        self.operation_error = ''
 
     @property
     def db(self):
@@ -105,6 +107,11 @@ class SelfPresence:
 
     def busy(self):
         return any(not t.done() for t in self.owner.limits.tasks)
+
+    def avatar_allowed(self, scope, manual=False):
+        return (not self.owner.closing and self.learning.policy.enabled(*scope)
+                and scope[0] == self.owner.config.get('self_avatar_platform')
+                and (manual or self.owner.config.get('self_avatar_auto', False)))
 
     async def judge(self, scope, prompt, payload, images=None):
         result = loads(await self.learning.policy.judge(scope, prompt, payload, images=images, purpose='self_presence'))
@@ -213,16 +220,16 @@ class SelfPresence:
                         raise ValueError('图片超过10MiB')
                 return bytes(data)
 
-    async def search(self, tag, site):
+    async def search(self, tag, site, page=1):
         endpoint = 'https://safebooru.donmai.us/posts.json' if site == 'danbooru' else 'https://safebooru.org/index.php'
-        params = dict(tags=tag+' rating:g', limit=10) if site == 'danbooru' else dict(page='dapi', s='post', q='index', json=1, limit=10, tags=tag)
+        params = dict(tags=tag+' rating:g', limit=10, page=page) if site == 'danbooru' else dict(page='dapi', s='post', q='index', json=1, limit=10, tags=tag, pid=page-1)
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20), headers={'User-Agent':'QQChatControl/1.17 (avatar source reader)'}) as session:
             async with session.get(endpoint, params=params) as response:
                 response.raise_for_status()
                 return await response.json(content_type=None)
 
-    async def collect(self, scope, account, persona_id, persona, state, key):
-        if time.time() < state.get('search_next', 0):
+    async def collect(self, scope, account, persona_id, persona, state, key, *, manual=False):
+        if not manual and time.time() < state.get('search_next', 0):
             return
         state['search_next'] = time.time()+86400
         self.save(key, state)
@@ -232,14 +239,18 @@ class SelfPresence:
             self.log(key, 'skipped', '人设没有可确认的角色标签')
             return
         site = 'danbooru'
-        posts = await self.search(tag, site)
+        page = state.get('search_page', 1)
+        posts = await self.search(tag, site, page)
         if not posts:
             site = 'safebooru'
-            posts = await self.search(tag, site)
+            posts = await self.search(tag, site, page)
+        state['search_page'] = page+1 if posts else 1
+        self.save(key, state)
+        added = 0
         self.folder.mkdir(parents=True, exist_ok=True)
         for post in posts[:10]:
-            if self.busy() or not self.allowed(scope, 'self_avatar_auto'):
-                return
+            if self.busy() or not self.avatar_allowed(scope, manual) or self.owner.config.get('self_avatar_persona') != persona_id:
+                break
             if post.get('rating') not in {'g', 'general', 'safe'} or post.get('is_deleted') or post.get('is_banned'):
                 continue
             width, height = post.get('image_width', post.get('width', 0)), post.get('image_height', post.get('height', 0))
@@ -252,7 +263,7 @@ class SelfPresence:
             if self.db.execute('SELECT 1 FROM presence_images WHERE account=? AND persona=? AND site=? AND post_id=?', (account, persona_id, site, pid)).fetchone():
                 continue
             if self.db.execute('SELECT COUNT(*) FROM presence_images WHERE account=? AND persona=?', (account, persona_id)).fetchone()[0]>=30:
-                return
+                break
             try:
                 raw = square_image(await self.fetch(url))
                 result = await self.judge(scope, IMAGE_PROMPT, dict(persona=persona, tags=post.get('tag_string', post.get('tags', ''))),
@@ -260,18 +271,23 @@ class SelfPresence:
                 if result.get('accept') is not True:
                     self.log(key, 'excluded', result.get('reason', '图片不适合头像'), site+':'+pid)
                     continue
-                if not self.allowed(scope, 'self_avatar_auto'):
-                    return
+                if not self.avatar_allowed(scope, manual) or self.owner.config.get('self_avatar_persona') != persona_id:
+                    break
                 path = self.folder / (account+'-'+site+'-'+pid+'.jpg')
                 path.write_bytes(raw)
                 source = post.get('source') or ('https://safebooru.donmai.us/posts/'+pid if site=='danbooru' else 'https://safebooru.org/index.php?page=post&s=view&id='+pid)
                 with self.db:
                     self.db.execute('INSERT OR IGNORE INTO presence_images(account,persona,site,post_id,source,path,reason,created) VALUES (?,?,?,?,?,?,?,?)',
                         (account, persona_id, site, pid, source, str(path), result.get('reason', ''), time.time()))
+                added += 1
+                if added >= 5:
+                    break
             except (ValueError, OSError, aiohttp.ClientError) as error:
                 self.log(key, 'failed', str(error), site+':'+pid)
+        self.log(key, 'collected', f'本轮加入{added}张头像候选；只入池，不修改头像')
 
-    async def avatar(self, scope, client, account):
+    async def avatar(self, scope, client, account, *, image_id=None):
+        manual = image_id is not None
         config = self.owner.config
         persona_id = config.get('self_avatar_persona', '')
         persona = self.owner.context.persona_manager.get_persona_v3_by_id(persona_id)
@@ -294,7 +310,7 @@ class SelfPresence:
                 state['reason'] = '15分钟后头像仍未确认，需在Web恢复'
                 self.save(key, state)
             return
-        if state.get('paused') or time.time()<state.get('next', 0):
+        if not manual and (state.get('paused') or time.time()<state.get('next', 0)):
             return
         if state.get('persona') != persona_id:
             state.pop('search_next', None)
@@ -302,13 +318,17 @@ class SelfPresence:
         state['next'] = time.time()+3600
         self.save(key, state)
         pool = self.db.execute('SELECT * FROM presence_images WHERE account=? AND persona=? AND used<? ORDER BY used,created DESC', (account, persona_id, time.time()-30*86400)).fetchall()
-        if len(pool)<5:
+        if manual:
+            pool = self.db.execute('SELECT * FROM presence_images WHERE id=? AND account=? AND persona=?', (image_id, account, persona_id)).fetchall()
+            if not pool:
+                raise ValueError('候选不属于当前账号与主形象')
+        elif len(pool)<5:
             await self.collect(scope, account, persona_id, persona.get('prompt', ''), state, key)
             pool = self.db.execute('SELECT * FROM presence_images WHERE account=? AND persona=? AND used<? ORDER BY used,created DESC', (account, persona_id, time.time()-30*86400)).fetchall()
-        if not pool or self.busy() or not self.allowed(scope, 'self_avatar_auto'):
+        if not pool or self.busy() or not self.avatar_allowed(scope, manual):
             return
         current = square_image(await self.fetch('https://q1.qlogo.cn/g?b=qq&nk='+account+'&s=640'))
-        if reference.exists() and not same_avatar(reference.read_bytes(), current):
+        if not manual and reference.exists() and not same_avatar(reference.read_bytes(), current):
             state.update(paused=True, reason='头像与上次记录不一致，可能被人工修改，已暂停')
             self.save(key, state)
             self.log(key, 'paused', state['reason'])
@@ -323,7 +343,7 @@ class SelfPresence:
         if decision.get('accept') is not True:
             self.log(key, 'skipped', decision.get('reason', '暂不更换'))
             return
-        if self.busy() or not self.allowed(scope, 'self_avatar_auto') or config.get('self_avatar_persona')!=persona_id:
+        if self.busy() or not self.avatar_allowed(scope, manual) or config.get('self_avatar_persona')!=persona_id:
             return
         reference.write_bytes(current)
         state.update(paused=True, reason='头像修改结果待确认', target=image['id'], pending=time.time(),
@@ -348,6 +368,47 @@ class SelfPresence:
         state.pop('pending', None)
         self.save(key, state)
         self.log(key, 'confirmed', image['reason'], str(image['id']))
+
+    def start_manual(self, scope, action, image_id=None):
+        if not self.avatar_allowed(scope, True):
+            raise ValueError('请选择头像平台内已开启学习的群')
+        persona_id = self.owner.config.get('self_avatar_persona', '')
+        persona = self.owner.context.persona_manager.get_persona_v3_by_id(persona_id)
+        if not persona:
+            raise ValueError('请先设置账号主形象人设')
+        if self.busy() or (self.task and not self.task.done()):
+            raise ValueError('当前有任务进行中，请稍后再试')
+        async def run():
+            key = None
+            try:
+                async with asyncio.timeout(240):
+                    client = self.learning.background.client(scope[0])
+                    account = str((await client.call_action('get_login_info'))['user_id'])
+                    if not account.isdigit():
+                        raise ValueError('账号无效')
+                    key = 'avatar:'+account
+                    if self.state(key).get('pending'):
+                        raise ValueError('上次头像结果尚未确认，请先确认后再操作')
+                    if action == 'collect':
+                        state = self.state(key)
+                        if state.get('persona') != persona_id:
+                            state['search_page'] = 1
+                        state['persona'] = persona_id
+                        await self.collect(scope, account, persona_id, persona.get('prompt',''), state, key, manual=True)
+                    else:
+                        await self.avatar(scope, client, account, image_id=image_id)
+            except Exception as error:
+                self.operation_error = str(error) or '操作超时'
+                if key:
+                    self.log(key, 'failed', str(error) or '操作超时')
+                logger.warning('手动头像操作失败：%s', error)
+            finally:
+                self.operation = ''
+        self.operation = action
+        self.operation_error = ''
+        self.task = asyncio.create_task(run())
+        self.owner.tasks.add(self.task)
+        self.task.add_done_callback(self.owner.tasks.discard)
 
     async def tick(self):
         avatars = set()
@@ -399,5 +460,6 @@ class SelfPresence:
         actions = [dict(r) for r in self.db.execute("SELECT * FROM presence_actions WHERE key LIKE ? OR key LIKE 'avatar:%' ORDER BY id DESC LIMIT 30", (prefix+'%',))]
         images = [dict(r) for r in self.db.execute('SELECT id,account,persona,site,post_id,source,reason,used FROM presence_images ORDER BY id DESC LIMIT 30')]
         return dict(states=states, actions=actions, images=images,
+            operation=self.operation, operation_error=self.operation_error,
             card_enabled=self.allowed(scope, 'self_card_auto'), avatar_enabled=bool(self.owner.config.get('self_avatar_auto')),
             persona=self.owner.config.get('self_avatar_persona', ''))

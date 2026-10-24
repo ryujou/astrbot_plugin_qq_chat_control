@@ -52,9 +52,14 @@ class LearningWeb:
     async def presence_control(self):
         body = await request.get_json()
         scope = str(body.get('platform', '')), str(body.get('group_id', ''))
-        if scope not in self.owner.rules or body.get('action') not in {'pause', 'resume'}:
+        if scope not in self.owner.rules or body.get('action') not in {'pause', 'resume', 'collect', 'use'}:
             raise ValueError('无效的群或操作')
         presence = self.owner.learning.presence
+        if body['action'] in {'collect', 'use'}:
+            if body['action'] == 'use' and (body.get('confirm') is not True or type(body.get('image_id')) is not int or body['image_id'] < 1):
+                raise ValueError('请确认修改账号头像并选择候选')
+            presence.start_manual(scope, body['action'], body.get('image_id'))
+            return dict(message='已开始补充候选' if body['action']=='collect' else '已开始更换头像，请查看动作结果')
         key = body.get('key')
         if key not in {s['key'] for s in presence.snapshot(scope)['states']}:
             raise ValueError('自主形象状态不存在')

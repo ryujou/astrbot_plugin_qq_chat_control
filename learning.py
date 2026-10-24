@@ -599,6 +599,11 @@ class FeedbackLearning:
                 return
             self.open()
         scope = platform, group
+        for key, record in self.owner.limits.records.items():
+            if key.startswith(':'.join(scope)+':'):
+                record.pop('notice', None)
+                record.pop('notice_persona', None)
+        self.owner.limits.save()
         self.expressions.generations[scope] = self.expressions.generations.get(scope, 0) + 1
         self.presence.clear(scope)
         self.policy.interaction.cancel(scope, '群学习数据已清理')

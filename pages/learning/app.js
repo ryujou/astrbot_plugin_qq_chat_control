@@ -16,7 +16,7 @@ let groups = [], current = null, tab = 'overview', page = 1, query = '', filter 
 let reactionDays = 7, reactionEmoji = '', reactionCategory = '', reactionView = 'summary';
 let settingsArea = 'group';
 const reactionStates = {pending:'待分类',classified:'已分类',uncertain:'不确定',missing:'缺少原文',failed:'失败',expired:'已淘汰',ignored:'已撤销或仅机器人',active:'已确认',suspended:'暂停',judging:'判断中',sending:'发送中',sent:'已送达',unknown:'发送结果未知',cancelled:'已取消',skipped:'已跳过'};
-Object.assign(purposes, {reaction_decide:'语义贴表情',reaction_classify:'回应分类',reaction_patterns:'回应用法提炼',reaction_feedback:'回应效果判断'});
+Object.assign(purposes, {limit_notice:'额度结束语',self_presence:'名片与头像',reaction_decide:'语义贴表情',reaction_classify:'回应分类',reaction_patterns:'回应用法提炼',reaction_feedback:'回应效果判断'});
 
 async function api(endpoint, params = {}) {
   const result = await bridge.apiGet('learning/' + endpoint, params);
@@ -99,8 +99,8 @@ function evaluationPanel(data) {
 }
 function presence(data) {
   return `<section class="panel"><h2>名片与头像</h2><p class="section-note">本群自动名片：${data.card_enabled?'开启':'关闭'} · 账号自动头像：${data.avatar_enabled?'开启':'关闭'} · 主形象：${escape(data.persona||'未指定')}。开关和时间间隔在设置中调整。账号头像所有群共用。</p>
-    ${(data.states||[]).map(s=>`<article><h3>${s.key.startsWith('card:')?'本群名片':'账号头像'}</h3><p>${escape(s.current??'尚未确认')} · ${s.pending?'等待读回确认':s.paused?'暂停':'自动判断'}<br>${escape(s.reason||'')}<br>下次可判断：${s.next?date(s.next):'有新资料时'}</p><button class="button" data-presence-key="${escape(s.key)}" data-presence-action="${s.paused&&!s.pending?'resume':'pause'}">${s.paused&&!s.pending?'恢复自动判断':'暂停自动覆盖'}</button></article>`).join('')||'<p class="section-note">尚无记录。两个开关默认关闭，开启后才采集和判断。</p>'}</section>
-    <section class="panel"><h2>头像候选</h2>${data.images.map(i=>`<article><span data-avatar="${i.id}" class="section-note">正在加载头像…</span><p>${escape(i.persona)} · ${escape(i.site)} #${escape(i.post_id)}<br>${escape(i.reason)}<br>${escape(i.source)}</p></article>`).join('')||'<p class="section-note">指定主形象并开启头像功能后，后台自动搜集。</p>'}</section>
+    ${(data.states||[]).map(s=>`<article><h3>${s.key.startsWith('card:')?'本群名片':'账号头像'}</h3><p>${escape(s.current??'尚未确认')} · ${s.pending?'等待读回确认':s.paused?'暂停':'自动判断'}<br>${escape(s.reason||'')}<br>下次可判断：${s.next?date(s.next):'有新资料时'}</p><button class="button" data-presence-key="${escape(s.key)}" data-presence-action="${s.paused&&!s.pending?'resume':'pause'}">${s.paused&&!s.pending?'恢复自动判断':'暂停自动覆盖'}</button></article>`).join('')||'<p class="section-note">尚无记录。可开启自动流程，也可先手动补充头像候选。</p>'}</section>
+    <section class="panel"><h2>头像候选</h2><p class="section-note">每轮最多补充5张合格图片，不立即换头像。${escape(data.operation_error||"")} ${data.operation?"正在"+(data.operation==="collect"?"补充候选":"更换头像")+"…":""}</p><button class="button" data-avatar-action="collect" ${data.operation?"disabled":""}>补充头像候选</button>${data.images.map(i=>`<article><span data-avatar="${i.id}" class="section-note">正在加载头像…</span><p>${escape(i.persona)} · ${escape(i.site)} #${escape(i.post_id)}<br>${escape(i.reason)}<br>${escape(i.source)}</p><button class="button" data-avatar-action="use" data-avatar-id="${i.id}" ${data.operation||i.persona!==data.persona?"disabled":""}>使用这张</button></article>`).join('')||'<p class="section-note">指定主形象后可点击补充候选，自动换头像开关可保持关闭。</p>'}</section>
     <section class="panel"><h2>最近动作</h2>${data.actions.map(a=>`<p>${date(a.created)} · ${escape(a.status)} · ${escape(a.value)}<br>${escape(a.reason)}</p>`).join('')||'<p class="section-note">暂无动作</p>'}</section>`;
 }
 function toolbar(options = '') {
@@ -159,6 +159,7 @@ async function load() {
     const data=selectedTab==='reactions'?await Promise.all([api('reactions',params),api('reaction_patterns',params),api('reaction_actions',params)]).then(([d,patterns,actions])=>({...d,patterns,actions})):await api(tab,params);
     if(token!==generation) return;
     $('content').innerHTML=({overview,replies,stickers,slang,members,background,choices,reactions,settings,presence})[selectedTab](data);
+    if(selectedTab==='presence'&&data.operation)setTimeout(()=>{if(token===generation)load();},3000);
     if(selectedTab==='presence')for(const node of document.querySelectorAll('[data-avatar]')){
       api('avatar_image',{...params,id:node.dataset.avatar}).then(async data=>{
         const img=new Image(96,96);img.alt='头像候选';img.src=data.src;
@@ -208,6 +209,13 @@ async function refresh() {
 }
 document.addEventListener('click',async event=>{
   const button=event.target.closest('button');if(!button)return;
+  if(button.dataset.avatarAction){
+    const action=button.dataset.avatarAction;
+    if(action==='use'&&!window.confirm('将使用这张图片更换账号头像，所有群都会看到。确定更换？'))return;
+    button.disabled=true;
+    try{const r=await bridge.apiPost('learning/presence_control',{...scope(),action,image_id:action==='use'?Number(button.dataset.avatarId):null,confirm:action==='use'});if(r?.ok===false)throw new Error(r.message);await load();}catch(error){showError(error);button.disabled=false;}
+    return;
+  }
   if(button.dataset.presenceKey){
     button.disabled=true;
     try{const r=await bridge.apiPost('learning/presence_control',{...scope(),key:button.dataset.presenceKey,action:button.dataset.presenceAction});if(r?.ok===false)throw new Error(r.message);await load();}catch(error){showError(error);button.disabled=false;}

@@ -120,9 +120,9 @@ class PresenceTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(p.state('card:qq_private:10003:90001'))
         self.assertTrue(p.state('avatar:90001'))
 
-    async def test_avatar_sends_once_then_observes_cooldown(self):
+    async def test_avatar_sends_once_then_observes_cooldown(self, manual=False):
         p = self.setup_presence()
-        self.owner.config.update(self_avatar_auto=True, self_avatar_platform=self.scope[0], self_avatar_persona='demo')
+        self.owner.config.update(self_avatar_auto=not manual, self_avatar_platform=self.scope[0], self_avatar_persona='demo')
         def picture(color):
             out = io.BytesIO()
             Image.new('RGB', (512, 512), color).save(out, format='PNG')
@@ -136,13 +136,16 @@ class PresenceTests(unittest.IsolatedAsyncioTestCase):
         p.collect = AsyncMock()
         p.fetch = AsyncMock(side_effect=[picture('white'), raw])
         p.judge.return_value = dict(accept=True, confidence=.99, reason='角色匹配')
-        await p.avatar(self.scope, self.client, '90001')
+        await p.avatar(self.scope, self.client, '90001', **({'image_id':1} if manual else {}))
         await p.avatar(self.scope, self.client, '90001')
         writes = [v for k,v in self.calls if k=='set_qq_avatar']
         self.assertEqual(len(writes), 1)
         self.assertTrue(writes[0]['file'].startswith('base64://'))
         self.assertFalse(p.state('avatar:90001')['paused'])
         self.assertGreater(p.state('avatar:90001')['next'], time.time()+47*3600)
+
+    async def test_manual_use_succeeds_with_auto_off(self):
+        await self.test_avatar_sends_once_then_observes_cooldown(manual=True)
 
     async def test_web_pause_and_resume_keep_cooldown(self):
         from quart import Quart
@@ -163,6 +166,37 @@ class PresenceTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ValueError):validate_presence(dict(self_avatar_auto=True), [])
         with self.assertRaises(ValueError):validate_presence({}, [dict(self_card_min_hours=12,self_card_max_hours=6)])
         with self.assertRaises(ValueError):validate_presence(dict(self_avatar_min_hours=1), [])
+
+    async def test_manual_collection_works_with_auto_off_and_stops_at_five(self):
+        p=self.setup_presence()
+        self.owner.config.update(self_avatar_auto=False,self_avatar_platform=self.scope[0],self_avatar_persona='demo')
+        out=io.BytesIO();Image.new('RGB',(256,256),'red').save(out,format='PNG')
+        p.fetch=AsyncMock(return_value=out.getvalue())
+        p.search=AsyncMock(return_value=[dict(id=i,rating='g',file_url=f'https://cdn.donmai.us/{i}.png') for i in range(1,9)])
+        p.judge=AsyncMock(side_effect=[dict(tag='demo_character')]+[dict(accept=True,reason='合成候选')]*5)
+        await p.collect(self.scope,'90001','demo','合成人设',{},'avatar:90001',manual=True)
+        self.assertEqual(p.db.execute('SELECT COUNT(*) FROM presence_images').fetchone()[0],5)
+        self.assertEqual(p.fetch.await_count,5)
+        self.assertNotIn('set_qq_avatar',[k for k,v in self.calls])
+        self.assertEqual(p.state('avatar:90001')['search_page'],2)
+
+    async def test_manual_operation_keeps_auto_switch_off(self):
+        p=self.setup_presence()
+        self.owner.config.update(self_avatar_auto=False,self_avatar_platform=self.scope[0],self_avatar_persona='demo')
+        self.learning.background.client=lambda _: self.client
+        p.collect=AsyncMock()
+        p.start_manual(self.scope,'collect')
+        await p.task
+        p.collect.assert_awaited_once()
+        self.assertFalse(self.owner.config['self_avatar_auto'])
+        self.assertEqual(p.operation,'')
+
+    async def test_manual_use_rejects_other_account_or_persona(self):
+        p=self.setup_presence()
+        self.owner.config.update(self_avatar_auto=False,self_avatar_platform=self.scope[0],self_avatar_persona='demo')
+        with self.assertRaises(ValueError):
+            await p.avatar(self.scope,self.client,'90001',image_id=999)
+        self.assertNotIn('set_qq_avatar',[k for k,v in self.calls])
 
     def test_image_limits_and_roundtrip(self):
         out=io.BytesIO();Image.new('RGB',(256,512),'red').save(out,format='PNG')
