@@ -16,6 +16,7 @@ from .attachments import tool_context
 from .output import QuietOutput
 from .personas import PersonaBindings
 from .memory import ShortMemory, policy
+from .presence import validate_presence
 from .quota import format_codex_quota, format_antigravity_quota
 from .limits import LLMLimits, current_message
 from .profiles import MemberProfiles
@@ -291,6 +292,12 @@ class QQChatControl(Star):
                 raise ValueError(self.validation_error)
             if self.ready:
                 return
+            validate_presence(self.config, self.rules.values())
+            if self.config.get('self_avatar_auto'):
+                if self.context.persona_manager.get_persona_v3_by_id(self.config['self_avatar_persona']) is None:
+                    raise ValueError('头像主形象人设不存在')
+                if self.config['self_avatar_platform'] not in {s[0] for s in self.rules}:
+                    raise ValueError('头像平台没有配置群规则')
             policy(self.config, {})
             for rule in self.rules.values():
                 policy(self.config, rule)

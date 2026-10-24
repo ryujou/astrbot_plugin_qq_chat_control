@@ -6,10 +6,12 @@ from pathlib import Path
 from quart import request
 
 from .memory import policy
+from .presence import validate_presence
 
 
 GROUP_SECTIONS = {
     '模型与人设': ['provider_id', 'persona_id', 'feedback_judge_provider_id'],
+    '自动群名片': ['self_card_auto', 'self_card_min_hours', 'self_card_max_hours', 'self_card_daily_max'],
     '回复与频率': ['auto_only', 'member_limit_enabled', 'auto_reply', 'message_count', 'reply_probability', 'idle_reply', 'idle_reply_minutes'],
     '学习与表达': ['feedback_observe', 'feedback_adapt_mode', 'candidate_replies', 'banter_intensity', 'member_profiles', 'slang_learning', 'sticker_learning', 'feedback_bot_ids'],
     'QQ回应表情': ['reaction_observe', 'reaction_auto', 'reaction_interval_seconds', 'reaction_max_per_10min'],
@@ -18,12 +20,15 @@ GROUP_SECTIONS = {
     '工作过程反馈': ['work_progress_mode', 'work_progress_interval_seconds'],
 }
 GLOBAL_SECTIONS = {
+    '自动账号头像': ['self_avatar_auto', 'self_avatar_platform', 'self_avatar_persona', 'self_avatar_min_hours', 'self_avatar_max_hours'],
     '权限与额度': ['allowed_qq_ids', 'allowed_group_ids', 'management_group_id', 'member_limit_hours', 'member_limit_count'],
     '默认模型': ['default_provider_id', 'codex_provider_id', 'learning_embedding_provider_id', 'feedback_recheck_provider_id'],
     '通用短期记忆': ['history_turns', 'idle_hours', 'session_hours', 'group_context_minutes', 'group_context_messages'],
     '运行提示': ['quiet_group_errors'],
 }
 LIMITS = {
+    'self_card_min_hours': (1, 168), 'self_card_max_hours': (1, 168), 'self_card_daily_max': (1, 4),
+    'self_avatar_min_hours': (24, 720), 'self_avatar_max_hours': (24, 720),
     'message_count': (1, None), 'reply_probability': (0, 100), 'idle_reply_minutes': (1, None),
     'work_progress_interval_seconds': (10, None), 'reaction_interval_seconds': (120, None),
     'reaction_max_per_10min': (1, 2), 'banter_intensity': (0, 100),
@@ -74,11 +79,13 @@ class WebSettings:
                 item['choices'] = models
             elif key == 'learning_embedding_provider_id':
                 item['choices'] = embeddings
-            elif key == 'persona_id':
+            elif key in {'persona_id', 'self_avatar_persona'}:
                 item['choices'] = personas
+            elif key == 'self_avatar_platform':
+                item['choices'] = [dict(value=p, label=p) for p in sorted({str(r['platform_id']) for r in self.current().get('group_rules', [])})]
             elif 'options' in meta:
                 item['choices'] = [dict(value=x, label=x) for x in meta['options']]
-            if key in MODEL_KEYS | {'learning_embedding_provider_id', 'persona_id'}:
+            if key in MODEL_KEYS | {'learning_embedding_provider_id', 'persona_id', 'self_avatar_persona', 'self_avatar_platform'}:
                 item['choices'] = [dict(value='', label='未指定（沿用原配置规则）'), *item['choices']]
             if key in LIMITS:
                 item['min'], item['max'] = LIMITS[key]
@@ -108,7 +115,7 @@ class WebSettings:
             self.owner.provider(value)
         if key == 'learning_embedding_provider_id' and value not in {'', *[p.provider_config['id'] for p in self.owner.context.get_all_embedding_providers()]}:
             raise ValueError('向量模型不存在或未启用')
-        if key == 'persona_id' and value and self.owner.context.persona_manager.get_persona_v3_by_id(value) is None:
+        if key in {'persona_id', 'self_avatar_persona'} and value and self.owner.context.persona_manager.get_persona_v3_by_id(value) is None:
             raise ValueError('群人设不存在')
 
     async def save(self):
@@ -130,6 +137,12 @@ class WebSettings:
         if 'persona_id' in changes and body.get('confirm_persona_change') is not True:
             raise ValueError('更改人设会永久清理本群聊天记录，请先确认此影响')
         values.update(changes)
+        validate_presence(config, config.get('group_rules', []))
+        if config.get('self_avatar_auto'):
+            if self.owner.context.persona_manager.get_persona_v3_by_id(config['self_avatar_persona']) is None:
+                raise ValueError('头像主形象人设不存在')
+            if config['self_avatar_platform'] not in {str(r['platform_id']) for r in config.get('group_rules', [])}:
+                raise ValueError('头像平台没有配置群规则')
         if not config.get('default_provider_id'):
             raise ValueError('请选择默认聊天模型')
         for key in ('default_provider_id', 'codex_provider_id'):

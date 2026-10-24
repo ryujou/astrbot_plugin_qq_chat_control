@@ -133,7 +133,7 @@
           "reply_probability": {
             "description": "触发概率（百分数）",
             "type": "float",
-            "default": 30.0
+            "default": 30
           },
           "idle_reply": {
             "description": "冷场主动发言",
@@ -256,6 +256,27 @@
             "description": "最多参考群消息条数",
             "type": "int",
             "default": 30
+          },
+          "self_card_auto": {
+            "description": "自动修改自己的群名片",
+            "type": "bool",
+            "default": false,
+            "hint": "仅本群，须启用学习。参考活跃成员名片，不带固定身份前缀；外部改名后暂停。"
+          },
+          "self_card_min_hours": {
+            "description": "群名片最短冷却间隔（小时）",
+            "type": "int",
+            "default": 6
+          },
+          "self_card_max_hours": {
+            "description": "群名片最长冷却间隔（小时）",
+            "type": "int",
+            "default": 12
+          },
+          "self_card_daily_max": {
+            "description": "群名片滚动24小时最多修改次数",
+            "type": "int",
+            "default": 2
           }
         }
       }
@@ -267,5 +288,31 @@
     "default": "local_codex/gpt-6.1-sol",
     "_special": "select_provider",
     "hint": "选择已启用的 gpt-6.1-sol/max Provider，并具备 chat_only_context 纯聊天边界。缺失或不符合条件时保留未知，不替换为其他模型。"
+  },
+  "self_avatar_auto": {
+    "description": "自动更换账号头像",
+    "type": "bool",
+    "default": false,
+    "hint": "影响该账号的所有群；选择平台与主形象后才可开启。"
+  },
+  "self_avatar_platform": {
+    "description": "头像账号的平台ID",
+    "type": "string",
+    "default": ""
+  },
+  "self_avatar_persona": {
+    "description": "账号主形象人设",
+    "type": "string",
+    "default": ""
+  },
+  "self_avatar_min_hours": {
+    "description": "头像最短冷却间隔（小时）",
+    "type": "int",
+    "default": 48
+  },
+  "self_avatar_max_hours": {
+    "description": "头像最长冷却间隔（小时）",
+    "type": "int",
+    "default": 96
   }
 }

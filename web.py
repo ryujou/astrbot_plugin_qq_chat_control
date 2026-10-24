@@ -1,4 +1,5 @@
 import base64
+import asyncio
 import json
 import mimetypes
 import time
@@ -21,7 +22,7 @@ class LearningWeb:
 
     def register(self):
         for name in ('bootstrap', 'overview', 'replies', 'reply', 'stickers', 'image', 'slang', 'members', 'background', 'choices',
-                     'reactions', 'reaction_patterns', 'reaction_actions', 'settings', 'save_settings'):
+                     'reactions', 'reaction_patterns', 'reaction_actions', 'settings', 'save_settings', 'presence', 'presence_control', 'avatar_image'):
             handler = self.settings.get if name == 'settings' else self.settings.save if name == 'save_settings' else getattr(self, name)
 
             async def view(handler=handler):
@@ -36,7 +37,42 @@ class LearningWeb:
                     return jsonify(ok=False, message='请求失败，请查看 AstrBot 日志'), 500
 
             self.owner.context.register_web_api('/astrbot_plugin_qq_chat_control/learning/' + name,
-                                                view, ['POST'] if name == 'save_settings' else ['GET'], '群聊学习看板：' + name)
+                                                view, ['POST'] if name in {'save_settings', 'presence_control'} else ['GET'], '群聊学习看板：' + name)
+
+    async def presence(self):
+        return self.owner.learning.presence.snapshot(self.scope()[:2])
+
+    async def avatar_image(self):
+        self.scope()
+        row = self.owner.learning.presence.db.execute('SELECT path FROM presence_images WHERE id=?', (int(request.args['id']),)).fetchone()
+        if row is None:
+            raise ValueError('头像不存在')
+        return dict(src='data:image/jpeg;base64,'+base64.b64encode(Path(row['path']).read_bytes()).decode())
+
+    async def presence_control(self):
+        body = await request.get_json()
+        scope = str(body.get('platform', '')), str(body.get('group_id', ''))
+        if scope not in self.owner.rules or body.get('action') not in {'pause', 'resume'}:
+            raise ValueError('无效的群或操作')
+        presence = self.owner.learning.presence
+        key = body.get('key')
+        if key not in {s['key'] for s in presence.snapshot(scope)['states']}:
+            raise ValueError('自主形象状态不存在')
+        if presence.task and not presence.task.done():
+            presence.task.cancel()
+            await asyncio.gather(presence.task, return_exceptions=True)
+        state = presence.state(key)
+        state['paused'] = body['action'] == 'pause'
+        state['reason'] = '已手动暂停' if state['paused'] else '已恢复，仍遵守冷却和开关'
+        state.pop('pending', None)
+        if not state['paused']:
+            state.pop('current', None)
+            if key.startswith('avatar:'):
+                account = key.split(':', 1)[1]
+                if account.isdigit():
+                    (presence.folder / (account+'-current.jpg')).unlink(missing_ok=True)
+        presence.save(key, state)
+        return dict(message=state['reason'])
 
     def scope(self):
         key = request.args.get('platform', ''), request.args.get('group_id', '')

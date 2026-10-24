@@ -97,6 +97,12 @@ function evaluationPanel(data) {
     <p class="section-note">${data.phase_costs.map(item=>`${phases[item.phase]||escape(item.phase)}：回复及选图/场景调用 ${item.calls} 次，失败 ${item.failures}`).join('<br>')}</p>
     <details><summary>最近配对时段</summary><ul class="mini-list">${data.periods.slice(-8).reverse().map(item=>`<li><span>${date(item.start)}<br>版本 ${escape(item.policy_version)}</span><span>原 ${item.baseline} / 学习 ${item.adaptive}<br>新增接话差 ${num(item.participants_delta)}</span></li>`).join('')||'<li>尚无相邻时段同时包含有效原策略和学习策略样本</li>'}</ul></details></section>`;
 }
+function presence(data) {
+  return `<section class="panel"><h2>名片与头像</h2><p class="section-note">本群自动名片：${data.card_enabled?'开启':'关闭'} · 账号自动头像：${data.avatar_enabled?'开启':'关闭'} · 主形象：${escape(data.persona||'未指定')}。开关和时间间隔在设置中调整。账号头像所有群共用。</p>
+    ${(data.states||[]).map(s=>`<article><h3>${s.key.startsWith('card:')?'本群名片':'账号头像'}</h3><p>${escape(s.current??'尚未确认')} · ${s.pending?'等待读回确认':s.paused?'暂停':'自动判断'}<br>${escape(s.reason||'')}<br>下次可判断：${s.next?date(s.next):'有新资料时'}</p><button class="button" data-presence-key="${escape(s.key)}" data-presence-action="${s.paused&&!s.pending?'resume':'pause'}">${s.paused&&!s.pending?'恢复自动判断':'暂停自动覆盖'}</button></article>`).join('')||'<p class="section-note">尚无记录。两个开关默认关闭，开启后才采集和判断。</p>'}</section>
+    <section class="panel"><h2>头像候选</h2>${data.images.map(i=>`<article><img data-avatar="${i.id}" alt="头像候选" width="96" height="96"><p>${escape(i.persona)} · ${escape(i.site)} #${escape(i.post_id)}<br>${escape(i.reason)}<br>${escape(i.source)}</p></article>`).join('')||'<p class="section-note">指定主形象并开启头像功能后，后台自动搜集。</p>'}</section>
+    <section class="panel"><h2>最近动作</h2>${data.actions.map(a=>`<p>${date(a.created)} · ${escape(a.status)} · ${escape(a.value)}<br>${escape(a.reason)}</p>`).join('')||'<p class="section-note">暂无动作</p>'}</section>`;
+}
 function toolbar(options = '') {
   return `<form id="searchForm" class="toolbar"><input id="itemSearch" type="search" maxlength="200" value="${escape(query)}" placeholder="${tab==='members'?'搜索称呼、QQ 或画像':tab==='slang'?'搜索词语、释义或场景':'搜索回复或表情内容'}" aria-label="搜索当前资料">${options?`<select id="itemFilter" aria-label="筛选状态"><option value="">全部状态</option>${options}</select>`:''}<button class="button" type="submit">搜索</button></form>`;
 }
@@ -152,7 +158,10 @@ async function load() {
     const selectedTab=tab;
     const data=selectedTab==='reactions'?await Promise.all([api('reactions',params),api('reaction_patterns',params),api('reaction_actions',params)]).then(([d,patterns,actions])=>({...d,patterns,actions})):await api(tab,params);
     if(token!==generation) return;
-    $('content').innerHTML=({overview,replies,stickers,slang,members,background,choices,reactions,settings})[selectedTab](data);
+    $('content').innerHTML=({overview,replies,stickers,slang,members,background,choices,reactions,settings,presence})[selectedTab](data);
+    if(selectedTab==='presence')for(const node of document.querySelectorAll('[data-avatar]')){
+      api('avatar_image',{...params,id:node.dataset.avatar}).then(img=>{if(token===generation)node.src=img.src;}).catch(showError);
+    }
     if(selectedTab==='settings'&&!current)document.querySelector('[data-settings-area="group"]').disabled=true;
     $('updated').textContent='更新于 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});
     if(selectedTab==='stickers') loadImages(token,params);
@@ -195,6 +204,11 @@ async function refresh() {
 }
 document.addEventListener('click',async event=>{
   const button=event.target.closest('button');if(!button)return;
+  if(button.dataset.presenceKey){
+    button.disabled=true;
+    try{const r=await bridge.apiPost('learning/presence_control',{...scope(),key:button.dataset.presenceKey,action:button.dataset.presenceAction});if(r?.ok===false)throw new Error(r.message);await load();}catch(error){showError(error);button.disabled=false;}
+    return;
+  }
   if((button.dataset.group||button.dataset.tab||button.dataset.openTab||button.dataset.settingsArea)&&!leaveSettings())return;
   if(button.dataset.settingsArea){settingsArea=button.dataset.settingsArea;await load();return;}
   if(button.dataset.group){const group=groups.find(g=>g.platform+':'+g.group_id===button.dataset.group);if(group)await choose(group);}
