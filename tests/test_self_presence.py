@@ -102,7 +102,7 @@ class PresenceTests(unittest.IsolatedAsyncioTestCase):
             out=io.BytesIO();Image.new('RGB',(512,512),color).save(out,format='PNG');return square_image(out.getvalue())
         p.folder.mkdir()
         path=p.folder/'candidate.jpg';path.write_bytes(picture('red'))
-        p.db.execute('INSERT INTO presence_images(account,persona,site,post_id,source,path,reason,created,head_framed) VALUES (?,?,?,?,?,?,?,?,1)',
+        p.db.execute('INSERT INTO presence_images(account,persona,site,post_id,source,path,reason,created,head_framed) VALUES (?,?,?,?,?,?,?,?,2)',
             ('90001','demo','danbooru','1','https://example.invalid/art',str(path),'合成人设',time.time()))
         (p.folder/'90001-current.jpg').write_bytes(picture('white'))
         p.fetch=AsyncMock(return_value=picture('black'))
@@ -131,7 +131,7 @@ class PresenceTests(unittest.IsolatedAsyncioTestCase):
         p.folder.mkdir()
         path = p.folder/'candidate.jpg'
         path.write_bytes(raw)
-        p.db.execute('INSERT INTO presence_images(account,persona,site,post_id,source,path,reason,created,head_framed) VALUES (?,?,?,?,?,?,?,?,1)',
+        p.db.execute('INSERT INTO presence_images(account,persona,site,post_id,source,path,reason,created,head_framed) VALUES (?,?,?,?,?,?,?,?,2)',
             ('90001','demo','danbooru','1','https://example.invalid/art',str(path),'合成人设',time.time()))
         p.collect = AsyncMock()
         p.fetch = AsyncMock(side_effect=[picture('white'), raw])
@@ -173,7 +173,7 @@ class PresenceTests(unittest.IsolatedAsyncioTestCase):
         out=io.BytesIO();Image.new('RGB',(256,256),'red').save(out,format='PNG')
         p.fetch=AsyncMock(return_value=out.getvalue())
         p.search=AsyncMock(return_value=[dict(id=i,rating='g',file_url=f'https://cdn.donmai.us/{i}.png') for i in range(1,9)])
-        p.judge=AsyncMock(side_effect=[dict(tag='demo_character')]+[dict(accept=True,head_complete=True,head_box=[.2,.1,.7,.6],reason='合成原图'),dict(accept=True,reason='圆形完整')]*5)
+        p.judge=AsyncMock(side_effect=[dict(tag='demo_character')]+[dict(accept=True,head_complete=True,head_box=[.25,.25,.7,.7],reason='合成原图'),dict(accept=True,reason='圆形完整')]*5)
         await p.collect(self.scope,'90001','demo','合成人设',{},'avatar:90001',manual=True)
         self.assertEqual(p.db.execute('SELECT COUNT(*) FROM presence_images').fetchone()[0],5)
         self.assertEqual(p.fetch.await_count,5)
@@ -207,8 +207,8 @@ class PresenceTests(unittest.IsolatedAsyncioTestCase):
 
     def test_off_center_head_is_complete_inside_circle(self):
         original=Image.new('RGB',(600,1000),'white')
-        ImageDraw.Draw(original).rectangle((420,10,569,199),fill='red')
-        raw=head_avatar(original,[.7,.01,.95,.2])
+        ImageDraw.Draw(original).rectangle((220,210,369,399),fill='red')
+        raw=head_avatar(original,[220/600,.21,370/600,.4])
         for data in [raw,round_preview(raw)]:
             with Image.open(io.BytesIO(data)) as image:
                 mask=image.convert('RGB').point(lambda p: p)
@@ -222,6 +222,12 @@ class PresenceTests(unittest.IsolatedAsyncioTestCase):
         ImageDraw.Draw(original).rectangle((0,0,255,30),fill='red')
         original.save(out,format='PNG')
         self.assertEqual(read_image(out.getvalue()).size,(256,800))
-        with Image.open(io.BytesIO(square_image(out.getvalue()))) as image:
-            self.assertGreater(image.getpixel((256,5))[0],200)
-            self.assertLess(image.getpixel((256,5))[1],60)
+        with self.assertRaises(ValueError):head_avatar(original,[.1,0,.9,.2])
+
+    def test_crop_never_adds_white_pixels(self):
+        raw=head_avatar(Image.new('RGB',(800,1000),'blue'),[.25,.25,.6,.6])
+        with Image.open(io.BytesIO(raw)) as image:
+            self.assertLess(max(image.getchannel('R').getextrema()),5)
+            self.assertLess(max(image.getchannel('G').getextrema()),5)
+        out=io.BytesIO();Image.new('RGBA',(256,256),(0,0,0,0)).save(out,format='PNG')
+        with self.assertRaises(ValueError):read_image(out.getvalue())
