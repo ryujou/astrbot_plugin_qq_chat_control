@@ -7,9 +7,9 @@ from pathlib import Path
 from types import SimpleNamespace as NS
 from unittest.mock import AsyncMock
 
-from PIL import Image
+from PIL import Image, ImageDraw
 import test_group_adaptation as fixture
-from astrbot_plugin_qq_chat_control.presence import square_image, same_avatar, validate_presence
+from astrbot_plugin_qq_chat_control.presence import square_image, same_avatar, validate_presence, read_image, head_avatar, round_preview
 
 
 class PresenceTests(unittest.IsolatedAsyncioTestCase):
@@ -102,7 +102,7 @@ class PresenceTests(unittest.IsolatedAsyncioTestCase):
             out=io.BytesIO();Image.new('RGB',(512,512),color).save(out,format='PNG');return square_image(out.getvalue())
         p.folder.mkdir()
         path=p.folder/'candidate.jpg';path.write_bytes(picture('red'))
-        p.db.execute('INSERT INTO presence_images(account,persona,site,post_id,source,path,reason,created) VALUES (?,?,?,?,?,?,?,?)',
+        p.db.execute('INSERT INTO presence_images(account,persona,site,post_id,source,path,reason,created,head_framed) VALUES (?,?,?,?,?,?,?,?,1)',
             ('90001','demo','danbooru','1','https://example.invalid/art',str(path),'合成人设',time.time()))
         (p.folder/'90001-current.jpg').write_bytes(picture('white'))
         p.fetch=AsyncMock(return_value=picture('black'))
@@ -131,7 +131,7 @@ class PresenceTests(unittest.IsolatedAsyncioTestCase):
         p.folder.mkdir()
         path = p.folder/'candidate.jpg'
         path.write_bytes(raw)
-        p.db.execute('INSERT INTO presence_images(account,persona,site,post_id,source,path,reason,created) VALUES (?,?,?,?,?,?,?,?)',
+        p.db.execute('INSERT INTO presence_images(account,persona,site,post_id,source,path,reason,created,head_framed) VALUES (?,?,?,?,?,?,?,?,1)',
             ('90001','demo','danbooru','1','https://example.invalid/art',str(path),'合成人设',time.time()))
         p.collect = AsyncMock()
         p.fetch = AsyncMock(side_effect=[picture('white'), raw])
@@ -173,7 +173,7 @@ class PresenceTests(unittest.IsolatedAsyncioTestCase):
         out=io.BytesIO();Image.new('RGB',(256,256),'red').save(out,format='PNG')
         p.fetch=AsyncMock(return_value=out.getvalue())
         p.search=AsyncMock(return_value=[dict(id=i,rating='g',file_url=f'https://cdn.donmai.us/{i}.png') for i in range(1,9)])
-        p.judge=AsyncMock(side_effect=[dict(tag='demo_character')]+[dict(accept=True,reason='合成候选')]*5)
+        p.judge=AsyncMock(side_effect=[dict(tag='demo_character')]+[dict(accept=True,head_complete=True,head_box=[.2,.1,.7,.6],reason='合成原图'),dict(accept=True,reason='圆形完整')]*5)
         await p.collect(self.scope,'90001','demo','合成人设',{},'avatar:90001',manual=True)
         self.assertEqual(p.db.execute('SELECT COUNT(*) FROM presence_images').fetchone()[0],5)
         self.assertEqual(p.fetch.await_count,5)
@@ -204,3 +204,24 @@ class PresenceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(Image.open(io.BytesIO(data)).size,(512,512))
         self.assertTrue(same_avatar(data,data))
         with self.assertRaises(ValueError):square_image(b'x'*(10*1024**2+1))
+
+    def test_off_center_head_is_complete_inside_circle(self):
+        original=Image.new('RGB',(600,1000),'white')
+        ImageDraw.Draw(original).rectangle((420,10,569,199),fill='red')
+        raw=head_avatar(original,[.7,.01,.95,.2])
+        for data in [raw,round_preview(raw)]:
+            with Image.open(io.BytesIO(data)) as image:
+                mask=image.convert('RGB').point(lambda p: p)
+                pixels=[(x,y) for y in range(512) for x in range(512) if (lambda c:c[0]>200 and c[1]<50 and c[2]<50)(mask.getpixel((x,y)))]
+                self.assertGreater(len(pixels),50000)
+                self.assertTrue(all((x-255.5)**2+(y-255.5)**2 < 240**2 for x,y in pixels))
+        with self.assertRaises(ValueError):head_avatar(original,[.5,.5,.4,.7])
+
+    def test_original_aspect_and_edge_content_preserved(self):
+        out=io.BytesIO();original=Image.new('RGB',(256,800),'white')
+        ImageDraw.Draw(original).rectangle((0,0,255,30),fill='red')
+        original.save(out,format='PNG')
+        self.assertEqual(read_image(out.getvalue()).size,(256,800))
+        with Image.open(io.BytesIO(square_image(out.getvalue()))) as image:
+            self.assertGreater(image.getpixel((256,5))[0],200)
+            self.assertLess(image.getpixel((256,5))[1],60)
