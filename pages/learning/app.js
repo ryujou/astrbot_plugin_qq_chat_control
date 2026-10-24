@@ -100,7 +100,7 @@ function evaluationPanel(data) {
 function presence(data) {
   return `<section class="panel"><h2>名片与头像</h2><p class="section-note">本群自动名片：${data.card_enabled?'开启':'关闭'} · 账号自动头像：${data.avatar_enabled?'开启':'关闭'} · 主形象：${escape(data.persona||'未指定')}。开关和时间间隔在设置中调整。账号头像所有群共用。</p>
     ${(data.states||[]).map(s=>`<article><h3>${s.key.startsWith('card:')?'本群名片':'账号头像'}</h3><p>${escape(s.current??'尚未确认')} · ${s.pending?'等待读回确认':s.paused?'暂停':'自动判断'}<br>${escape(s.reason||'')}<br>下次可判断：${s.next?date(s.next):'有新资料时'}</p><button class="button" data-presence-key="${escape(s.key)}" data-presence-action="${s.paused&&!s.pending?'resume':'pause'}">${s.paused&&!s.pending?'恢复自动判断':'暂停自动覆盖'}</button></article>`).join('')||'<p class="section-note">尚无记录。两个开关默认关闭，开启后才采集和判断。</p>'}</section>
-    <section class="panel"><h2>头像候选</h2>${data.images.map(i=>`<article><img data-avatar="${i.id}" alt="头像候选" width="96" height="96"><p>${escape(i.persona)} · ${escape(i.site)} #${escape(i.post_id)}<br>${escape(i.reason)}<br>${escape(i.source)}</p></article>`).join('')||'<p class="section-note">指定主形象并开启头像功能后，后台自动搜集。</p>'}</section>
+    <section class="panel"><h2>头像候选</h2>${data.images.map(i=>`<article><span data-avatar="${i.id}" class="section-note">正在加载头像…</span><p>${escape(i.persona)} · ${escape(i.site)} #${escape(i.post_id)}<br>${escape(i.reason)}<br>${escape(i.source)}</p></article>`).join('')||'<p class="section-note">指定主形象并开启头像功能后，后台自动搜集。</p>'}</section>
     <section class="panel"><h2>最近动作</h2>${data.actions.map(a=>`<p>${date(a.created)} · ${escape(a.status)} · ${escape(a.value)}<br>${escape(a.reason)}</p>`).join('')||'<p class="section-note">暂无动作</p>'}</section>`;
 }
 function toolbar(options = '') {
@@ -160,7 +160,11 @@ async function load() {
     if(token!==generation) return;
     $('content').innerHTML=({overview,replies,stickers,slang,members,background,choices,reactions,settings,presence})[selectedTab](data);
     if(selectedTab==='presence')for(const node of document.querySelectorAll('[data-avatar]')){
-      api('avatar_image',{...params,id:node.dataset.avatar}).then(img=>{if(token===generation)node.src=img.src;}).catch(showError);
+      api('avatar_image',{...params,id:node.dataset.avatar}).then(async data=>{
+        const img=new Image(96,96);img.alt='头像候选';img.src=data.src;
+        await img.decode();
+        if(token===generation)node.replaceWith(img);
+      }).catch(error=>{if(token===generation){node.textContent='头像加载失败';showError(error);}});
     }
     if(selectedTab==='settings'&&!current)document.querySelector('[data-settings-area="group"]').disabled=true;
     $('updated').textContent='更新于 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});
